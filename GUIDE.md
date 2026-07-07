@@ -28,7 +28,7 @@ v3 做对、v4 原样保留的：附录 G hook 体系、R-revision append-only�
 |---|---|---|---|
 | **Harness（环境层）** | 无论模型怎么想，什么被强制？ | hooks、settings、scheduled routines、权限 allowlist | hook 是确定性的，CLAUDE.md 是建议性的（官方 docs 原话）。重复违反的文本规则 → 转成 hook |
 | **Context（信息层）** | 每个时刻窗口里有什么？ | 常驻 CLAUDE.md / 按需 skills / 持久文件 | 见下方"上下文纪律" |
-| **Prompt（指令层）** | 单次调用怎么说？ | skill 正文、`templates/dispatch-prompt.md`、OPUS-SYSTEM.md | 规则写在"正确高度"：具体启发式，不是 if-else 也不是空话；验证标准具名写进 prompt；派发用必填槽位模板，不用散文叮嘱 |
+| **Prompt（指令层）** | 单次调用怎么说？ | skill 正文、change-loop 的 `dispatch-prompt.md`、OPUS-SYSTEM.md | 规则写在"正确高度"：具体启发式，不是 if-else 也不是空话；验证标准具名写进 prompt；派发用必填槽位模板，不用散文叮嘱 |
 | **Loop（控制层）** | 迭代由谁控制、何时退出？ | Loop Contract | 五要素闭合（§3 审计表）；人从环里移到环上 |
 
 **约束下沉原则**（每写一条约束，自底向上问）：
@@ -74,31 +74,33 @@ v3 做对、v4 原样保留的：附录 G hook 体系、R-revision append-only�
 
 ---
 
-## 4. 部署
+## 4. 部署（AI 执行，人确认）
 
-### 新项目
+**权威流程在 `skills/project-bootstrap`，本节是速查。** 部署与立项由 AI 执行，人只做两件事：回答 brainstorm、逐行确认回填的文档。
 
-1. 复制 `templates/CLAUDE.md` + `templates/NORTH_STAR.md` 到项目根目录；**North Star 由人写**。
-2. 部署 skills：`skills/` 三个目录 → `~/.claude/skills/`（跨项目）或项目 `.claude/skills/`。
-3. 部署 hooks：按 WORKFLOW.md 附录 G；重型测试项目按 Heavy-test 决策路径补 block-unsafe-test-commands。
-4. 中型项目跑 `npx @fission-ai/openspec@latest init`（注意：OpenSpec 2026-06 已重构到 v1.x action-based 工作流，v3 文档里的命令面先跑一次 `toolchain-refresh` 核对）。
-5. 首次 brainstorm → ARCHITECTURE.md + backlog.md → commit。
-6. subagent 派发一律用 `templates/dispatch-prompt.md` 填槽。
-7. 本工具包仓库保留一份本地 clone——skills 中对 WORKFLOW.md 的引用（附录 G、§5.8）指向工具包，**不把 WORKFLOW.md 复制进项目**。
+### 新项目（含新机器首次部署）
+
+在项目目录对 Claude 说「立项」/「部署工作流」→ `project-bootstrap` 接管，顺序：
+
+1. 装/更新 skills（工具包 clone → `~/.claude/skills/`；clone 路径写入 `~/.claude/my-work-skill.toolkit-path`）
+2. brainstorm 立项（superpowers:brainstorming，人回答）
+3. AI 回填 NORTH_STAR.md / CLAUDE.md /（中型）openspec init + ARCHITECTURE.md + backlog.md——**人逐行确认后 commit**
+4. hooks 配置（此时 stack 已知：基础四件 + warn-route-before-opsx + toolchain 保鲜守卫；heavy-test 按附录 G Day-1 决策路径，可日后回补）
+5. Opus launcher（§5）→ `toolchain-refresh` → 收尾声明「第一个 change 从 change-loop 路由开始」
+
+**冷启动**（机器上还没有任何 skill）：clone 本仓库 → 在项目目录让 AI 读 `skills/project-bootstrap/SKILL.md` 并照做。skill 装好后这条路径不再需要。
+
+> 顺序修正记录：v4.0 的先填模板/先配 hooks 顺序在 2026-07-07 首测被证伪，v4.1 反转（证据：FIELD-LOG.md #2/#3）。
 
 ### v3 项目迁移
 
-1. `openspec/` 与 hooks 保留不动。
-2. 新增 NORTH_STAR.md（人写）。
-3. `templates/CLAUDE.md` 替换项目 CLAUDE.md（Stack 段照搬）。
-4. 删 PROTOCOL.md（内容已由 skills 承载）、删项目内 WORKFLOW.md 副本。
-5. 行为变化：session start 从"报告后问"改为"报告后继续"；checkpoint 编排改为 land-the-plane。
+同样走 `project-bootstrap`：已有 `openspec/` 与 hooks 保留不动；NORTH_STAR.md 由 AI 从现有 ARCHITECTURE/backlog/README 起草、人确认；`templates/CLAUDE.md` 替换项目 CLAUDE.md（Stack 段照搬，补 Toolkit 行）；删 PROTOCOL.md、删项目内 WORKFLOW.md 副本。行为变化：session start 从"报告后问"改为"报告后继续"；checkpoint 编排改为 land-the-plane。
 
 ---
 
 ## 5. Opus 的使用方式
 
-注入方式（约束力从强到弱）：① `claude --append-system-prompt (Get-Content OPUS-SYSTEM.md -Raw)`（PowerShell；bash 用 `"$(cat OPUS-SYSTEM.md)"`）或 output style（推荐）；② 全局 `~/.claude/CLAUDE.md` 追加段。二选一。
+注入必须自动化——手动注入是记忆型约束，2026-07-07 首测实证全程被忘（Opus 无校准裸跑）。方式（优先级从高到低）：① 模型感知 `claude` wrapper（`project-bootstrap` Step 4 写入 `$PROFILE`；按 `--model` 参数 → `ANTHROPIC_MODEL` 环境变量 → settings 三级 解析会话模型，命中 Opus 才注入——所以「开了就是 Opus、从不敲 --model」的启动习惯同样覆盖；解析不到模型时按 bootstrap 时问定的默认处理。已实测 5 用例：显式 opus / 全名 / settings 回落 / 环境变量优先 / 显式 fable 不注入）；② `$PROFILE` 够不到的环境（desktop app / IDE）用 output style 或手动 `claude --append-system-prompt (Get-Content OPUS-SYSTEM.md -Raw)`（bash 用 `"$(cat OPUS-SYSTEM.md)"`）；③ 全局 `~/.claude/CLAUDE.md` 追加段（约束力最弱，且会注入所有模型的会话）。已知缺口：会话中 `/model` 切换 launcher 层管不到——切到 Opus 开新会话（与短会话纪律一致）。
 
 **预期**："Fable 体验" = 模型智力 + 行为校准 + harness 支撑。OPUS-SYSTEM.md 移植第二项，第三项本来就模型无关，第一项移植不了。补偿：任务颗粒度减半、gate 按路由分级加密、模型分工（Opus 跑内环吞吐，最强模型守 R3 设计与 value-review 判断——智力放 gate 上，吞吐放循环里）。单次派发级的模型选择由 AI 自动判断：规则在 `dispatch-prompt` 的 Model 槽位（默认继承；只在错误可被机械检测时降级；**产出可以便宜，裁判不能便宜**），降级派发必须附带 cheap-model 行动规范整块。
 
@@ -146,7 +148,7 @@ for ($i = 1; $i -le $max; $i++) {
 | 40% 有效上下文 + 文件交接>压缩 | Horthy ACE-FCA + Anthropic 2026-03 | §2 上下文纪律 |
 | recitation / 保留失败记录 / 噪音隔离 / KV 稳定前缀 | Manus (Yichao Ji) + Anthropic 2025-09 | §2 / change-loop |
 | 评审发现分诊 | Claude Code 官方 docs 2026 | §2 / gate 评审 |
-| 派发模板必填槽位 | Anthropic multi-agent research 2025-06 | templates/dispatch-prompt.md |
+| 派发模板必填槽位 | Anthropic multi-agent research 2025-06 | skills/change-loop/dispatch-prompt.md |
 | 短会话>抠 CLAUDE.md 行数 | McMillan, arXiv 2605.10039 | §2（修正 v3 假设） |
 
 **拒绝**：
@@ -165,9 +167,13 @@ for ($i = 1; $i -le $max; $i++) {
 
 ## 8. 验证计划（GREEN 阶段观察清单）
 
-RED 证据 = v3.x 实证史（内存炸机、propose 漏 add、R-revision 三连、痛点 1–6），已文档化。GREEN 在下个真实项目逐项观察：
+RED 证据 = v3.x 实证史（内存炸机、propose 漏 add、R-revision 三连、痛点 1–6），已文档化。**v4 起的实测证据链在 `FIELD-LOG.md`**（append-only，接棒附录 H；2026-07-07 首测 8 条发现、6 条潜在问题、修复对照与微测证据都在那里）。本节只往前看。
 
-- `change-loop`：路由声明率；R0 判错率；stuck 判据有没有真的截住"换个说法再试"；绿锚点 reset 有没有发生、发生时挽回了什么；BLOCKED 出口的 blockers 质量。
+GREEN 在下个真实项目逐项观察：
+
+- `project-bootstrap`：立项词汇触发率；回填草稿的人工修改量（大改 = brainstorm 覆盖不足）；settings.json merge 是否保住已有 hooks；收尾后下一 turn 是否真从 change-loop 开始。
+- `change-loop`：Route Declaration 四行块完整率（v4.0 首测 #6 的直接复测点）；Mode↔Next 自洽率（Mode A 是否真的先 brainstorm）；路由分布——R2 若过度集中，要么判据过宽、要么人审 gate 成为超预期瓶颈，届时复核 R1/R2 分界；`warn-route-before-opsx` 触发次数；R0 判错率；stuck 判据有没有真的截住"换个说法再试"；绿锚点 reset 有没有发生、发生时挽回了什么；BLOCKED 出口的 blockers 质量。
+- `claude` wrapper：Opus 会话开场行为是否可感（Stance/Evidence 校准生效的行为学证据），对照首测的"全程无感"；Fable 会话确认未被误注入。
 - `value-review`：触发信号 vs 你的直觉；分类判据误伤正当 enabling 的比率。
 - `toolchain-refresh`：**第一个真实任务已就位——核对 OpenSpec v1.x 重构后的命令面与 WORKFLOW.md 附录 A 的差异**；scheduled routine 是否真的跑起来。
 - 分级评审：R1 单审若 wall-clock 开销不成比例，可降级为结构化 inline 自审（superpowers 5.x 同款权衡）——但先收集 2–3 个 change 的命中数据再降。
@@ -182,6 +188,7 @@ RED 证据 = v3.x 实证史（内存炸机、propose 漏 add、R-revision 三连
 | v3 章节 | v4 状态 |
 |---|---|
 | 第 0/2A/4/6 部分 | **被取代** → `change-loop` 路由（Mode A/B 升级：默认 A + 可观察 B 白名单 + 复述确认 + B 内跳闸——不再让 AI 从文本流畅度猜意图清晰度） |
+| 第 1 部分（环境准备）、第 3 部分（项目骨架） | **被取代** → `project-bootstrap`（附录 G 脚本源码、第 3 部分 backlog.md 模板仍被其引用） |
 | 附录 E（PROTOCOL.md） | **被取代** → skills 按需注入 |
 | 7.4 工具链保鲜 | **被取代** → `toolchain-refresh` + scheduled routine |
 | 5A 上下文管理 | **被取代** → §2 上下文纪律 + land-the-plane（文件交接 > 压缩，40% 阈值） |

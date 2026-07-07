@@ -295,23 +295,20 @@
 /plugin install superpowers@superpowers-marketplace</code></pre>
       </div>
       <div class="step">
-        <h3>安装 skills</h3>
-        <p>把 <code>skills/</code> 下三个目录复制到 <code>~/.claude/skills/</code>（全局生效），或单个项目的 <code>.claude/skills/</code>。</p>
-        <pre><code>skills/change-loop        # 核心：路由 + 循环 + 证据 gate
-skills/value-review       # 中期回顾：防自嗨、审架构
-skills/toolchain-refresh  # 工具链保鲜（建议挂每周 routine）</code></pre>
+        <h3>冷启动（仅第一台机器一次）</h3>
+        <p>clone 本工具包到本地，在项目目录让 AI 读 <code>skills/project-bootstrap/SKILL.md</code> 并照做。skill 装好后，这条手动路径永久退役——后续部署与更新都由 AI 完成。</p>
       </div>
       <div class="step">
-        <h3>建项目锚</h3>
-        <p>复制 <code>templates/CLAUDE.md</code> 和 <code>templates/NORTH_STAR.md</code> 到项目根目录。<strong>North Star 必须自己写</strong>——一句话目标和成功判据是你的，AI 只读不改。顺手把 NORTH_STAR 底部 Review Log 首行日期填为今天：它是中期回顾节奏（每 5 次归档 / 4 周）的计时锚。</p>
+        <h3>说「立项」</h3>
+        <p>之后 <code>project-bootstrap</code> 接管：先 brainstorm 立项（你回答问题），再由 AI 回填 <code>NORTH_STAR.md</code> / <code>CLAUDE.md</code> /（中型）ARCHITECTURE + backlog——<strong>你逐行确认，不用从零填模板</strong>。North Star 生效后只有你能改，AI 只读。</p>
       </div>
       <div class="step">
-        <h3>部署 hooks</h3>
-        <p>从工具包的 <code>WORKFLOW.md 附录 G</code> 复制 PowerShell 脚本并注册 <code>.claude/settings.json</code>。有重型测试（GB 级数据 / 容器 / e2e）的项目，务必加测试命令拦截——这是唯一 100% 可靠的约束层。工具包仓库保留一份本地 clone（skills 会回引其中章节），<strong>不要把 WORKFLOW.md 复制进项目</strong>。</p>
+        <h3>hooks 与 Opus 注入自动配好</h3>
+        <p>立项收敛、stack 已知后，AI 按 <code>WORKFLOW.md 附录 G</code> 部署 hooks 并跑通验证用例（重型测试项目含测试命令拦截——唯一 100% 可靠的约束层），再把模型感知的 <code>claude</code> wrapper 写进 PowerShell $PROFILE：它自己解析本次会话的模型，是 Opus 就自动注入 OPUS-SYSTEM.md——直接敲 <code>claude</code>、从不碰 <code>--model</code> 的习惯也覆盖，不再靠手动。</p>
       </div>
       <div class="step">
         <h3>开工</h3>
-        <p>中型项目先 <code>npx @fission-ai/openspec@latest init</code>，然后直接说需求。AI 会先声明路由等级和理由——从这一刻起流程就在运转了。派发 subagent 时按 <code>templates/dispatch-prompt.md</code> 填槽。</p>
+        <p>直接说需求。AI 先给出四行路由声明（Route / Explored / Mode / Next）再动 spec 或代码——从这一刻起流程就在运转了。第一个 change 也不例外：从 change-loop 开始，不从 propose 开始。</p>
       </div>
     </div>
   </section>

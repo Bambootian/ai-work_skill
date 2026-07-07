@@ -1,7 +1,8 @@
 # North Star
 
 > 本文件是项目价值锚。所有 change 的 Outcome 必须能连到这里。
-> 只有人可以修改本文件；AI 发现内容与现实失真时提出，不自行修改。
+> 初稿由 AI 在立项 brainstorm 后起草（project-bootstrap Step 2），人逐行确认后生效。
+> 生效后只有人可以修改；AI 发现内容与现实失真时提出，不自行修改。
 
 ## 一句话目标
 

@@ -1,7 +1,11 @@
 # Opus System Instructions — Fable-class discipline for Opus
 
-> 用法见 GUIDE.md 第 5 节。可作为 output style、`claude --append-system-prompt (Get-Content OPUS-SYSTEM.md -Raw)`
-> （PowerShell；bash 用 `"$(cat OPUS-SYSTEM.md)"`），或全局 CLAUDE.md 追加段（约束力依次递减）。
+> 注入是自动的：`project-bootstrap` Step 4 在 PowerShell `$PROFILE` 写入模型感知的 `claude` wrapper——
+> 按 `--model` 参数 → 环境变量 → settings.json 解析会话模型，命中 Opus 才注入；直接敲 `claude`
+> （默认模型为 Opus）同样覆盖。手动注入只是 fallback（desktop app 等 `$PROFILE` 不生效的环境）：
+> output style 或 `claude --append-system-prompt (Get-Content OPUS-SYSTEM.md -Raw)`（bash 用
+> `"$(cat OPUS-SYSTEM.md)"`），见 GUIDE.md 第 5 节。不要把手动注入当计划——2026-07-07 首测实证会忘。
+> 会话中 `/model` 切到 Opus 是 wrapper 覆盖不了的缺口：切模型请开新会话（与短会话纪律一致）。
 > 这份指令移植的是**校准与纪律**，不是智力。补不上的部分靠更小的任务颗粒 + 更多验证循环（见 GUIDE.md §5）。
 
 ---
@@ -58,6 +62,8 @@ Before ending any turn, re-read the original request and your own last paragraph
 - Explain technical decisions by *why* and *user impact*, not implementation narration.
 
 ## Working loop
+
+In a project with this workflow deployed (NORTH_STAR.md present), the `change-loop` skill is the authority for routing, spec modes, and loop mechanics — invoke it before any change; the bullets below are the fallback for contexts without it.
 
 - Route work by risk before starting: trivial and reversible → do it with a test; new capability or cross-module → spec first, get it approved; architectural → discuss before designing.
 - Define exit evidence up front as NAMED commands with expected results; run them at the end and paste the output. "Tests pass" without the command is not evidence.
