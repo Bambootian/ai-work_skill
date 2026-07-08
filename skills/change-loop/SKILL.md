@@ -45,6 +45,14 @@ Before Mode B proceeds, restate intent / boundary / key decisions in ≤3 senten
 
 **Mode B tripwire (mandatory).** During the checklist, ≥2 answers land "no / uncertain" on boundaries, dependencies, or implicit constraints — or any semantic ambiguity surfaces → stop, state the switch, go Mode A. A wrong Mode B costs a rework cycle; a wrong Mode A costs minutes. When torn, Mode A.
 
+**Pre-spec explore declaration (R1 and above — WORKFLOW.md §5.3).** After Mode A's brainstorm (or Mode B's restatement), immediately before writing the spec artifact (SPEC-lite / opsx propose), post one line:
+
+```
+Explore: needed — <reason> → opsx explore before the spec | not needed — <reason>
+```
+
+Three triggers, any one → needed: existing code must be understood before specifying; more than one viable technical approach is still unresolved; a new external dependency surfaced. The route-time `Explored:` line does not substitute — it recorded what was read *before* routing; this line certifies nothing new needs reading *after* the brainstorm's output landed. Non-OpenSpec projects: an equivalent read-only investigation with findings stated.
+
 **R0 discipline.** R0 has no contract, but it still states — in one line, before starting — its verify command + expected result, and shows that output before committing. An R0 that fails its first attempt, exceeds ~1 hour, or turns out to touch spec/architecture/data contracts is not R0: re-route to whatever the criteria table demands (spec impact → R1/R2; architecture or data contracts → R3) and write the contract (failure notes live there). Half-done work at re-route time: tree green → commit it as the new route's first task; tree red → reset to the anchor first.
 
 ## Step 2 — Loop contract (R1 and above)
@@ -127,6 +135,7 @@ Resuming: `git status` first — uncommitted changes mean an interrupted iterati
 - A `Route:` line not followed by `Explored:` / `Mode:` / `Next:` lines
 - A declaration whose Mode and Next lines contradict (`Mode: A` + `Next: propose/SPEC-lite`)
 - Entering Mode B without naming which whitelist predicate admitted it
+- A spec artifact (SPEC-lite / propose) written with no `Explore:` declaration since the brainstorm/restatement
 - A completion claim with no command output behind it
 - A red tree at a task boundary, or starting a task from a red tree
 - The same error message twice in a row and you're still tweaking the same idea

@@ -5,6 +5,14 @@
 > 改完补齐修复对照与验证证据，GREEN 观察项进 GUIDE §8 清单。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-07-08 — v4.1 二测（finance_tool，第二个 change propose 前）
+
+### 用户发现：change-loop skill 丢失了 WORKFLOW.md §5.3 的 pre-spec Explore 声明
+
+- **RED（用户原话）**：「一般在进propose前，不是应该判断是否过一轮explore吗，我看上一个change你也没问，是我的这个工作流skill没有写明这一点，还是你已经默认判断这个change到这里已经不需要走explore了？」
+- **根因**：v4.1 重写 change-loop 时，§5.3 的显式 Explore 声明被 Route Declaration 的 `Explored:` 行吸收——但两个检查点时机不同：`Explored:` 在 route 前（brainstorm 之前），§5.3 在 brainstorm 之后、spec 之前。brainstorm 可能冒出新依赖/新代码面，合并后没有形式化触发器强制回头再看。实证：add-data-access 含新外部依赖，按 §5.3 判据应答「需要」，其重型 vendor 调研在功能上覆盖了 explore，但声明形式未走，用户无法看到判断发生过。
+- **修复**：change-loop skill 补「Pre-spec explore declaration」轻量一行式（needed / not needed + 理由，三触发判据沿用 §5.3），置于 Mode 段之后；Red flags 增补一条。不恢复独立阶段。
+
 ## 2026-07-07 — v4.0 首测（Opus 会话，真实新项目立项）→ v4.1
 
 ### 用户报告的 8 条发现 → 修复对照
