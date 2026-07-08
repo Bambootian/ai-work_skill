@@ -567,7 +567,7 @@ CLAUDE.md Hard Rule 默认每 task 一次 commit。实践中遇到强耦合声�
 
 ### 5.6 Verify(每个 capability 边界一次)
 
-双重验证。`/opsx:verify` 在当前 OpenSpec CLI 里**不存在**(2026-05 实践确认),用 CLI 命令 + AI 主动核查代替。
+双重验证。`/opsx:verify` 在 2026-05 版 OpenSpec CLI 里**不存在**(当时实践确认),用 CLI 命令 + AI 主动核查代替。(2026-07-07 toolchain-refresh:1.5.0 已恢复 `/opsx:verify` 命令;在人工评估其行为并决定采纳前,本节流程继续按下述 CLI + AI 核查执行。)
 
 #### 5.6.1 spec 合规检查
 
@@ -1002,7 +1002,7 @@ npx @fission-ai/openspec@latest update  # 升级
 /opsx:explore                # 调研(显式声明)
 /opsx:propose <change-id>    # 创建 change
 /opsx:apply <change-id>      # 实施
-# /opsx:verify <change-id>   # 当前 CLI 不存在,用 openspec validate 替代(见 5.6)
+/opsx:verify <change-id>     # 1.5.0 已恢复(2026-07-07 toolchain-refresh 确认);是否替换 5.6 的 validate+AI 核查流程待人工评估
 /opsx:archive <change-id>    # 归档(skill 不自动合并主 spec,见 5.8)
 
 # Plugin
