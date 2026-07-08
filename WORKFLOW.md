@@ -567,23 +567,21 @@ CLAUDE.md Hard Rule 默认每 task 一次 commit。实践中遇到强耦合声�
 
 ### 5.6 Verify(每个 capability 边界一次)
 
-双重验证。`/opsx:verify` 在 2026-05 版 OpenSpec CLI 里**不存在**(当时实践确认),用 CLI 命令 + AI 主动核查代替。(2026-07-07 toolchain-refresh:1.5.0 已恢复 `/opsx:verify` 命令;在人工评估其行为并决定采纳前,本节流程继续按下述 CLI + AI 核查执行。)
+双重验证。
 
-#### 5.6.1 spec 合规检查
-
-```bash
-openspec validate --changes --strict   # 当前 change 内自洽,tasks 全 [x]
-```
-
-外加 AI 主动逐条核查(CLI 只验格式,不验"实现存在"):
+#### 5.6.1 工件一致性:官方 `/opsx:verify`
 
 ```
-对照 openspec/changes/<change-id>/specs/<capability>/spec.md 逐条:
+/opsx:verify <change-id>
+```
+
+历史:此命令在 2026-05 版 CLI 里不存在,曾用「`openspec validate --changes --strict` + AI 逐条核查」替代;OpenSpec 1.5.0 恢复官方命令,2026-07-07 采纳为正式流程。
+
+底线不随工具降低——官方 skill 的输出必须覆盖,缺哪条 AI 补核哪条:
 - 每个 Requirement 在 src/ 里有对应实现?给出文件:行号
 - 每个 Scenario 在 tests/ 里有对应测试?给出测试方法名
 - 全测试命令运行输出,失败数=0?
 不允许"应该实现了"这类未经验证的措辞。
-```
 
 #### 5.6.2 端到端真跑(防 j)
 
@@ -1002,7 +1000,7 @@ npx @fission-ai/openspec@latest update  # 升级
 /opsx:explore                # 调研(显式声明)
 /opsx:propose <change-id>    # 创建 change
 /opsx:apply <change-id>      # 实施
-/opsx:verify <change-id>     # 1.5.0 已恢复(2026-07-07 toolchain-refresh 确认);是否替换 5.6 的 validate+AI 核查流程待人工评估
+/opsx:verify <change-id>     # 校验实现与工件一致(1.5.0 官方命令,2026-07-07 采纳,见 5.6.1)
 /opsx:archive <change-id>    # 归档(skill 不自动合并主 spec,见 5.8)
 
 # Plugin
