@@ -5,6 +5,21 @@
 > 改完补齐修复对照与验证证据，GREEN 观察项进 GUIDE §8 清单。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-07-09 — v4.1 二测（finance_tool，第二个 change 归档后）
+
+### 用户澄清设计意图：Verify/Polish 是判断项不是必走项，但「未起」必须归档时主动汇报
+
+- **观察**：add-research-report 归档时未跑 /opsx:verify 与 Polish（5.7.1/5.7.2），归档汇报也未说明
+  「未起及原因」；用户追问后才对照出实质覆盖矩阵（5.6.1 被 R2 spec reviewer 的 Requirement 覆盖表
+  吸收、5.6.2 被契约端到端实跑覆盖、5.7 部分被 findings 驱动的 remediation 覆盖）。
+- **用户原话**：「这个verify和polish的流程，也不是说每个change都死板的必走，我在设计这个change-loop
+  的skill时也说是希望ai根据任务和状态等自行判断是否要起verify和polish的流程，需要起就直接起，如果
+  没有起，在归档后要告诉我一声并说明不需要起的原因。change-loop的skill我们不能在做加法，也应该根据
+  实际和真正的便利性，合理的做减法」
+- **修复（减法式）**：不加新块、不加新声明格式——只扩写 Step 4 evidence bundle 既有条目
+  「Anything skipped or deferred, stated plainly」，点名 §5.6 Verify / §5.7 Polish 为 judgment call：
+  需要则直接起，跳过则归档汇报带「未起 + 原因」。
+
 ## 2026-07-08 — v4.1 二测（finance_tool，第二个 change propose 前）
 
 ### 用户发现：change-loop skill 丢失了 WORKFLOW.md §5.3 的 pre-spec Explore 声明

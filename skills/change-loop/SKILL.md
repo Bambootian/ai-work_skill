@@ -102,7 +102,7 @@ Then (also when the 5-iteration cap hits): write the 3-line failure note → sup
 Assemble and present the evidence bundle:
 - Each Verify command with real output pasted (not summarized, not "should pass")
 - Outcome check: did the user-visible outcome land? One line.
-- Exit state declared: DONE / BLOCKED / SPLIT. Anything skipped or deferred, stated plainly.
+- Exit state declared: DONE / BLOCKED / SPLIT. Anything skipped or deferred, stated plainly — including the named WORKFLOW.md phases (§5.6 Verify, §5.7 Polish). Those are judgment calls, not per-change mandates: judge by task and state, run them directly when warranted (no asking), and when skipped the archive report states which and why (e.g. "5.6.1 absorbed by the gate reviewer's requirement-coverage table", "no source code → code-simplifier n/a").
 
 Then archive per project convention (OpenSpec seed/merge steps: WORKFLOW.md §5.8 in the my-work-skill toolkit repo — clone path is on the project CLAUDE.md `Toolkit` line; the toolkit is not copied into projects). After archiving, check NORTH_STAR.md's Review Log: ≥5 archives or ≥4 weeks since the last value review → trigger `value-review` now. This check IS the cadence enforcement — don't rely on remembering.
 
