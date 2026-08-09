@@ -17,7 +17,8 @@
 
 1. Read `NORTH_STAR.md`, `backlog.md` (missing → project not bootstrapped: run the `project-bootstrap`
    skill — brainstorm 立项 first, artifacts backfilled from it — before any change); find any
-   in-progress change (`openspec/changes/` or `SPEC.md`).
+   in-progress change (`openspec/changes/`, or root `SPEC.md` — that file is change-loop's
+   spec-lite for ONE change; a small project's permanent design lives in `DESIGN.md`).
 2. If one exists, read its Loop Contract + `tasks.md` + change `CLAUDE.md` (if present).
 3. Report state in ≤2 lines, then CONTINUE the loop. Ask only when at a gate or blocked.
 

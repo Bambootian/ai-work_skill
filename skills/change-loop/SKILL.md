@@ -72,7 +72,7 @@ Before implementation, write into the change's `tasks.md` (or SPEC-lite) header:
 
 If Outcome can only be written in implementation vocabulary (refactor / unify / abstract / coverage), this is enabling work: name the user-visible change it unblocks and when that lands (≤2 changes). Cannot name one → take it to `value-review` before proceeding.
 
-**Where SPEC-lite lives (R1).** One file containing Goal / Non-goals / Scenarios / Loop Contract: OpenSpec projects → `openspec/changes/<change-id>/spec-lite.md` (CLI validate applies to R2+ four-artifact changes, not R1); other projects → `SPEC.md` at repo root, moved to `docs/changes/` at close.
+**Where SPEC-lite lives (R1).** One file containing Goal / Non-goals / Scenarios / Loop Contract: OpenSpec projects → `openspec/changes/<change-id>/spec-lite.md` (CLI validate applies to R2+ four-artifact changes, not R1); other projects → `SPEC.md` at repo root, moved to `docs/changes/` at close. Root `SPEC.md` therefore belongs to **one change**, never to the project: a small project's permanent design doc is `DESIGN.md` (WORKFLOW.md 第 6 部分). Naming the permanent doc `SPEC.md` makes toolchain-refresh's mid-change guard fire forever and makes this close step move the project's design into `docs/changes/`.
 
 ## Step 3 — Inner loop (autonomous)
 

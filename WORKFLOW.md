@@ -22,7 +22,7 @@
 ├──────────────────────────────────────────────────────────┤
 │ Layer 2 │ EXECUTION:  superpowers (TDD / subagent / debug)│
 ├──────────────────────────────────────────────────────────┤
-│ Layer 1 │ SPEC:       OpenSpec(中型) / SPEC.md(小型)  │
+│ Layer 1 │ SPEC:       OpenSpec(中型) / DESIGN.md(小型) │
 ├──────────────────────────────────────────────────────────┤
 │ Layer 0 │ BRAINSTORM: Mode A 探索式 / Mode B 补全式       │
 └──────────────────────────────────────────────────────────┘
@@ -38,7 +38,7 @@
 **小工程核心循环**(整个项目跑一次):
 
 ```
-[Brainstorm: Mode A or B] → [SPEC.md] → [TDD apply] → [端到端] → [README]
+[Brainstorm: Mode A or B] → [DESIGN.md] → [TDD apply] → [端到端] → [README]
 ```
 
 **心智模型**:
@@ -732,21 +732,37 @@ Apply 阶段是上下文膨胀的高发区——test output、debug 日志、cod
 
 **核心思路**:流程缩减,纪律不减。Hard Rules 全留,工件简化。
 
+> ⚠ **本节为 v3 时期内容,与当前 skills 层存在未消解的冲突(2026-08-09 zd-tool 立项时发现)。**
+>
+> **已修正的部分——文件名**:小工程的项目永久设计文档在本节原名 `SPEC.md`,现统一改为
+> `DESIGN.md`。原因:根目录 `SPEC.md` 已被 skills 层占用为**单次变更**的 spec-lite——
+> change-loop「Where SPEC-lite lives (R1)」规定非 OpenSpec 项目的变更 spec 写入根
+> `SPEC.md` 并在收尾时移入 `docs/changes/`;toolchain-refresh 的 mid-change guard 把根
+> `SPEC.md` 的存在直接判定为「有变更进行中」;`templates/CLAUDE.md` 的 Session Start
+> Protocol 同样把它当作进行中变更的标志。三处一致,所以让位的是本节。
+> 两个名字同时存在时:`DESIGN.md` = 项目永久设计,根 `SPEC.md` = 当前这一次变更。
+>
+> **未修正的部分——流程语义**:本节的流程(Brainstorm → 写文档 → TDD apply)没有 Route
+> Declaration、没有 `NORTH_STAR.md`、没有 `backlog.md`,与 `project-bootstrap` +
+> `change-loop` 的当前流程不一致;附录 F 的小工程 CLAUDE.md 模板同理。
+> **冲突时以 skills 为准**(project-bootstrap 原则:phase procedure lives in skills,
+> not in this file)。本节是否保留 / 如何对齐,待决。
+
 ### 整体流程
 
 ```
-[Brainstorm: Mode A or B] → [写 SPEC.md] → [你审一次] → [TDD apply]
-   → [端到端真跑] → [SPEC.md + README]
+[Brainstorm: Mode A or B] → [写 DESIGN.md] → [你审一次] → [TDD apply]
+   → [端到端真跑] → [DESIGN.md + README]
 ```
 
 ### Step 0 — Brainstorm
 
 按 Mode A 或 Mode B(详见第 4 部分)。收敛信号:你能用 2-3 句话说清"做什么、不做什么、关键决策"。
 
-### Step 1 — SPEC.md 模板
+### Step 1 — DESIGN.md 模板
 
 ```markdown
-# <项目名> — SPEC
+# <项目名> — DESIGN
 
 > 创建:2026-05-12  预期工时:3 天  生命周期:Y(可能扩展)
 
@@ -802,7 +818,7 @@ THEN 不创建记录,无错误提示
 ### Step 2 — 单层自审
 
 ```
-对 SPEC.md 跑 yes/no 自查(独立 subagent):
+对 DESIGN.md 跑 yes/no 自查(独立 subagent):
 - Goal 清晰且可向第三方解释?
 - Non-goals 覆盖范围蠕变风险?
 - Decisions 每条带"为什么"?
@@ -815,13 +831,13 @@ THEN 不创建记录,无错误提示
 通过后:
 
 ```bash
-git add SPEC.md
-git commit -m "spec: initial SPEC.md"
+git add DESIGN.md
+git commit -m "spec: initial DESIGN.md"
 ```
 
 ### Step 3 — TDD apply
 
-按 SPEC.md Tasks 顺序逐个实施。每个 task:
+按 DESIGN.md Tasks 顺序逐个实施。每个 task:
 1. 读对应 Scenario
 2. 写 failing test → 红
 3. 写最少代码让绿
@@ -830,7 +846,7 @@ git commit -m "spec: initial SPEC.md"
 
 每个 task 一次 commit。Hard Rules 全适用。
 
-**上下文管理**:小工程通常 session 内能跑完。如果 task 超过 15 个,在中间做一次 checkpoint + /summarize,把总结写入 SPEC.md 末尾的 `## Progress Notes` 段。
+**上下文管理**:小工程通常 session 内能跑完。如果 task 超过 15 个,在中间做一次 checkpoint + /summarize,把总结写入 DESIGN.md 末尾的 `## Progress Notes` 段。
 
 ### Step 4 — 端到端真跑
 
@@ -878,7 +894,7 @@ git commit -m "docs: README"
 升级动作:
 
 1. `npx @fission-ai/openspec@latest init`
-2. 拆 SPEC.md → proposal.md / design.md / spec.md / tasks.md(让 AI 一次性拆完:"`请按 PROTOCOL.md 的四件套格式拆分当前 SPEC.md,保持所有内容不丢失`")
+2. 拆 DESIGN.md → proposal.md / design.md / spec.md / tasks.md(让 AI 一次性拆完:"`请按 PROTOCOL.md 的四件套格式拆分当前 DESIGN.md,保持所有内容不丢失`")
 3. 写 ARCHITECTURE.md + backlog.md
 4. 替换 CLAUDE.md 为中型版,加入 PROTOCOL.md
 5. `npx openspec validate` 确认格式
@@ -1044,7 +1060,7 @@ my-project/
 small-project/
 ├── CLAUDE.md      # 小工程版(含内联协议)
 ├── README.md
-├── SPEC.md        # 全部 spec 内容
+├── DESIGN.md      # 项目永久设计(根 SPEC.md 留给 change-loop 的单次变更 spec-lite)
 ├── src/, tests/
 └── .claude/
 ```
@@ -1187,6 +1203,12 @@ Immediately after:
 
 ## 附录 F:小工程 CLAUDE.md 模板
 
+> ⚠ **v3 时期模板,已被 `templates/CLAUDE.md` 取代(2026-08-09)。**
+> `project-bootstrap` Step 2 对 small 和 medium 项目一律使用 `templates/CLAUDE.md`——
+> 它的 Session Start Protocol 读 `NORTH_STAR.md` + `backlog.md` 并把根 `SPEC.md` 当作
+> 进行中变更的标志,与 change-loop / toolchain-refresh 一致;本模板都没有。
+> 保留本节仅供参考旧项目。新项目不要用。文件名已随第 6 部分统一为 `DESIGN.md`。
+
 ```markdown
 # Project: <你的项目名>
 
@@ -1197,30 +1219,30 @@ Immediately after:
 ## Session Start Protocol
 
 At the start of every new session:
-1. Read `SPEC.md`, list unchecked tasks.
+1. Read `DESIGN.md`, list unchecked tasks.
 2. Report state in 1-2 lines, ask what to do next.
 
 ## Hard Rules (always)
 
 - No code change without a failing test first.
-- No skipping the spec — stop and update SPEC.md or remove the behavior.
+- No skipping the spec — stop and update DESIGN.md or remove the behavior.
 - Commit after each task. Never batch multiple tasks into one commit.
 - Commit messages explain why and reference the task number.
 - External libraries / APIs must be verified to exist before use.
-- Key decisions must be recorded under SPEC.md `Decisions`.
+- Key decisions must be recorded under DESIGN.md `Decisions`.
 - Self-review, code-review, verify must run in an isolated subagent.
 - If confused or context unclear, STOP and ask, don't guess.
 
 ## Skills Coordination Protocol
 
-This project uses single-file `SPEC.md` as spec layer, Superpowers as
+This project uses single-file `DESIGN.md` as spec layer, Superpowers as
 execution layer.
 
 ### Planning
 - Vague intent → USE `brainstorming` skill.
 - Clear intent → DO NOT use `brainstorming`. User describes, AI replies
   yes/no checklist.
-- Plan written into SPEC.md (Goal, Non-goals, Decisions, Brainstorm Log,
+- Plan written into DESIGN.md (Goal, Non-goals, Decisions, Brainstorm Log,
   External APIs, Scenarios, Tasks; last task = e2e verification).
 
 ### Self-review

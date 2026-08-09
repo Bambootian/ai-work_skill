@@ -5,6 +5,49 @@
 > 改完补齐修复对照与验证证据，GREEN 观察项进 GUIDE §8 清单。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-08-09 — bootstrap 三测（zd-tool，small 项目首次立项）
+
+### RED：`SPEC.md` 文件名在 WORKFLOW.md 与 skills 层之间语义冲突
+
+- **观察**：按 WORKFLOW.md 附录 B 的小工程布局，把项目永久设计文档命名为根 `SPEC.md`。
+  随后跑 `toolchain-refresh`，Step 0 mid-change guard 立刻误判「有变更进行中」——它把根
+  `SPEC.md` 的存在当作 R1 变更的标志。追查发现三处 skills 层定义一致且与 WORKFLOW.md 相反：
+  change-loop §「Where SPEC-lite lives (R1)」规定非 OpenSpec 项目的**单次变更** spec-lite 写入
+  根 `SPEC.md` 并在收尾时移入 `docs/changes/`；toolchain-refresh mid-change guard 同义；
+  `templates/CLAUDE.md` Session Start Protocol 同义。而 WORKFLOW.md 第 6 部分（整节）、附录 B、
+  附录 F 把它当项目永久 spec（含 Tasks / Decisions / Progress Notes 段）。
+- **未拦截住的后果（若不改）**：① 每次 toolchain-refresh 永远只做 inventory，不做更新，且
+  「被 guard 拦下」看起来是正常行为，不会报错；② 第一次 change-loop 收尾会把项目永久设计文档
+  移进 `docs/changes/`。两个都是静默失败。
+- **修正（减法式）**：不重写流程，只统一文件名 + 标注冲突。小工程永久设计文档改名 `DESIGN.md`
+  （WORKFLOW.md 第 6 部分全节、附录 B、附录 F、Layer 图、小工程核心循环图共 11 处）；
+  第 6 部分与附录 F 顶部各加一个 ⚠ 块，写明「已修正=文件名 / 未修正=流程语义」，并声明
+  冲突时以 skills 为准（依据 project-bootstrap「phase procedure lives in skills, not in this file」）。
+- **遗留待决（未动）**：WORKFLOW.md 第 6 部分的流程本身仍是 v3 语义——无 Route Declaration、
+  无 `NORTH_STAR.md`、无 `backlog.md`；附录 F 的小工程 CLAUDE.md 模板已被 `templates/CLAUDE.md`
+  完全取代。该节是否保留 / 如何对齐，属产品决策，未替用户定。
+
+### GREEN：project-bootstrap Step 3 的 hook 模板在 Windows 上有两个必须适配的点
+
+- **`-m` 歧义**：heavy-test hook 模板的 `<SAFE_FILTER_REGEX>` 对 pytest 栈填 `\s-k\s` 类正则时，
+  若一并放行 `-m`，会被 `python -m pytest` 里属于 **Python 的模块参数** `-m` 命中——该 hook 对
+  每一条裸跑命令都放行，静默失效。修法：只检查 `pytest` 之后的参数尾串。
+- **matcher 只写 `Bash` 会漏**：本机主 shell 是 PowerShell，测试命令走 PowerShell 工具时
+  `"matcher": "Bash"` 不触发。改为 `"matcher": "Bash|PowerShell"`。
+- 两点均经 17 条 echo 用例验证（含 `-m "not heavy"` / `-k` / 逃生变量 bash 与 pwsh 两种写法 /
+  非测试命令），17/17 通过。**建议回写进附录 G 模板的填充示例。**
+
+### 附带发现：Opus 注入 wrapper 静默失效（已随用户决定整体移除）
+
+- 2026-07-20 装的 `$PROFILE` wrapper 正则为 `^opus$|opus-4-8`，用户升级默认模型到
+  `claude-opus-5[1m]` 后匹配不上；且三个 `settings.json` 均无 `model` 字段、
+  `$assumeOpusDefault = $false`，导致裸跑 `claude` 一直未注入。**从 07-20 到 08-09 期间
+  所有「以为注入了」的会话实际都没注入**，且无任何可见症状。
+- 用户判定注入机制在 Opus 5 后已不需要，wrapper 整体删除（备份
+  `Microsoft.PowerShell_profile.ps1.bak-2026-08-09`）。project-bootstrap Step 4 相应作废。
+- **教训**：把版本号硬编码进匹配条件的自动化，失效时是静默的。若将来再引入同类机制，
+  必须带一条「注入是否生效」的可观察输出。
+
 ## 2026-07-09 — v4.1 二测（finance_tool，第二个 change 归档后）
 
 ### 用户澄清设计意图：Verify/Polish 是判断项不是必走项，但「未起」必须归档时主动汇报
