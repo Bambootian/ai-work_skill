@@ -35,7 +35,15 @@
 - **matcher 只写 `Bash` 会漏**：本机主 shell 是 PowerShell，测试命令走 PowerShell 工具时
   `"matcher": "Bash"` 不触发。改为 `"matcher": "Bash|PowerShell"`。
 - 两点均经 17 条 echo 用例验证（含 `-m "not heavy"` / `-k` / 逃生变量 bash 与 pwsh 两种写法 /
-  非测试命令），17/17 通过。**建议回写进附录 G 模板的填充示例。**
+  非测试命令），17/17 通过。
+- **已回写进附录 G**（2026-08-09 同日）：settings.json 配置段 matcher 改 `Bash|PowerShell` 并加注；
+  `<SAFE_FILTER_REGEX>` 说明改为「只匹配 runner 名之后的尾串」；模板脚本本体加入 runner-name
+  split（复用 `<TEST_CMD_REGEX>` 作切分点，保持三个占位符）；验证用例从四个扩到五个，
+  Test 5 专测 wrapper 短参数陷阱且要求用「日常真正敲的那条命令」；填充示例补 Python/pytest 一组。
+- **回写时新发现的第三个坑**：模板复用 `<TEST_CMD_REGEX>` 做 `-split` 切分点，该正则**必须用
+  非捕获组** `(?:...)`——PowerShell 的 `-split` 会把捕获组内容塞进结果数组，导致 `[1]` 拿到的是
+  捕获文本而非参数尾串。实测：`'x npm run test --testNamePattern y' -split '\bnpm\s+(test|run\s+test)\b',2`
+  的 `[1]` = `'run test'`；换成 `(?:...)` 后 `[1]` = `' --testNamePattern y'`。已写入模板 CAUTION 段。
 
 ### 附带发现：Opus 注入 wrapper 静默失效（已随用户决定整体移除）
 

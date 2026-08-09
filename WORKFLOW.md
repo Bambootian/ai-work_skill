@@ -1330,7 +1330,7 @@ PreToolUse Hook 是"硬约束"——代码层面拦截,AI 无法绕过。两者�
         ]
       },
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/warn-destructive-git.ps1" }
         ]
@@ -1339,6 +1339,11 @@ PreToolUse Hook 是"硬约束"——代码层面拦截,AI 无法绕过。两者�
   }
 }
 ```
+
+> **matcher 必须写 `Bash|PowerShell`,不能只写 `Bash`**(2026-08-09 zd-tool 实测)。
+> Windows 会话的主 shell 是 PowerShell,命令走 PowerShell 工具时 `"matcher": "Bash"` 根本不触发——
+> hook 静默失效,而你以为拦截层还在。matcher 支持正则,两个都写没有代价。
+> 这条对所有挂在命令执行上的 hook 都适用(destructive-git、unsafe-test-commands)。
 
 ### 不做 Hook 的约束(及原因)
 
@@ -1430,15 +1435,23 @@ RAM 90%+,用户机器冻结数分钟。
      `\bpytest\b` / `\bgo\s+test\b` / `\bnpm\s+test\b`)
    - `<SAFE_FILTER_REGEX>` — 哪些参数表示"已 scoped"(如 `--filter\b` /
      `\s-k\s` / `\s-run\s` / `--testNamePattern\b`)
+
+     > ⚠ **只在 runner 名之后的参数尾串里匹配,不要对整条命令匹配**(2026-08-09 zd-tool 实测)。
+     > 反例:pytest 栈把 `-m`(marker 过滤)列进本正则、又对整条命令匹配时,
+     > `python -m pytest` 里属于 **Python 的模块参数** `-m` 会命中——于是**每一条裸跑命令都被放行**,
+     > hook 完全失效且无任何症状。同类风险:`go test -run` vs `go -run`、
+     > `npm test -- -t` 里的前置参数。模板脚本已改为先切出尾串再匹配,填空时照抄即可。
+
    - `<ESCAPE_VAR>` — 应急通道环境变量名(项目特异,如 `MYPROJECT_ALLOW_FULL_TEST`)
 
 2. **复制脚本到 `.claude/scripts/block-unsafe-test-commands.ps1`**(去掉 `-TEMPLATE`
    后缀)
 
-3. **`.claude/settings.json` Bash matcher 加挂载**:
+3. **`.claude/settings.json` 命令 matcher 加挂载**(`Bash|PowerShell`,不能只写 `Bash`,
+   理由见本附录 settings.json 配置段下方的注):
    ```json
    {
-     "matcher": "Bash",
+     "matcher": "Bash|PowerShell",
      "hooks": [
        {
          "type": "command",
@@ -1450,7 +1463,7 @@ RAM 90%+,用户机器冻结数分钟。
 
 4. **PROTOCOL.md 加 hard rule 段**(模板见下),hook 错误消息回链此段
 
-5. **验证四个用例**(本工程实测过的):
+5. **验证五个用例**(前四个为本工程实测,Test 5 为 2026-08-09 zd-tool 补充):
    ```bash
    # Test 1: 裸命令应 block
    echo '{"tool_input":{"command":"<TEST_CMD>"}}' | powershell -NoProfile -File .claude/scripts/block-unsafe-test-commands.ps1
@@ -1460,14 +1473,25 @@ RAM 90%+,用户机器冻结数分钟。
    echo '{"tool_input":{"command":"<TEST_CMD> <SAFE_FILTER_EXAMPLE>"}}' | powershell -NoProfile -File ...
    # 期望 0
 
-   # Test 3: 应急通道应放
+   # Test 3: 应急通道应放(bash 前缀式 与 PowerShell 赋值式 各测一次)
    echo '{"tool_input":{"command":"<ESCAPE_VAR>=1 <TEST_CMD>"}}' | powershell ...
+   echo '{"tool_input":{"command":"$env:<ESCAPE_VAR>=1; <TEST_CMD>"}}' | powershell ...
    # 期望 0
 
    # Test 4: 非测试命令应放
    echo '{"tool_input":{"command":"<BUILD_CMD>"}}' | powershell ...
    # 期望 0
+
+   # Test 5: wrapper 短参数陷阱 —— 完整的日常调用形式必须仍然 block
+   #   (如 `python -m pytest`:那个 -m 属于 python 不属于 pytest)
+   echo '{"tool_input":{"command":"<FULL_INVOCATION_AS_ACTUALLY_TYPED>"}}' | powershell ...
+   # 期望 2 —— 若得到 0,说明 SAFE_FILTER 匹配到了 runner 之前的参数,hook 已失效
    ```
+
+   > 用你**日常真正敲的那条命令**跑 Test 5,不要用简化形式。zd-tool 实测里,
+   > `pytest` 能正确 block,但 `python -m pytest` 被放行——差别只在前面多了两个词。
+   > 另:hook 挂载后,**在会话里真的跑一次被拦的命令**确认 matcher 生效;
+   > echo 测试只证明脚本对,不证明它被挂在了正确的 tool 上。
 
 #### PROTOCOL.md hard rule 段模板
 
@@ -1681,15 +1705,35 @@ exit 0
 #                           '\bgo\s+test\b'           (Go)
 #                           '\bnpm\s+(?:test|run\s+test)\b'  (Node)
 #                           '\bcargo\s+test\b'        (Rust)
-#   <SAFE_FILTER_REGEX>   regex matching presence of a scope-narrowing flag:
-#                           '--filter\b'              (.NET)
-#                           '\s-k\s'                  (pytest)
-#                           '\s-run\s'                (Go)
-#                           '--testNamePattern\b'     (Jest)
-#                           '\s--\s.*\btest::'        (Cargo, partial)
+#   <SAFE_FILTER_REGEX>   regex matching presence of a scope-narrowing flag.
+#                         MATCHED AGAINST THE ARGUMENT TAIL AFTER THE RUNNER
+#                         NAME, never against the whole command line -- see
+#                         "runner-name split" below for why.
+#                           '--filter\b'                  (.NET)
+#                           '(^|\s)-(k|m)(\s|=)'          (pytest)
+#                           '(^|\s)-run(\s|=)'            (Go)
+#                           '--testNamePattern\b'         (Jest)
+#                           '\s--\s.*\btest::'            (Cargo, partial)
 #   <ESCAPE_VAR>          project-specific env var name authorising full runs,
 #                           e.g. MYPROJECT_ALLOW_FULL_TEST. Avoid generic names
 #                           like ALLOW_FULL_TEST to reduce collision risk.
+#
+# Runner-name split (2026-08-09, zd-tool):
+#   The filter check runs on the substring AFTER the runner name, not on the
+#   whole command. Reason: `python -m pytest` contains a bare ` -m ` that
+#   belongs to Python (module flag), not to pytest (marker filter). A whole-line
+#   match on '-m' therefore allows EVERY bare full-suite run -- the hook is
+#   silently dead while looking installed. Same class of bug: `go -run`,
+#   `npm test -- -t`, any wrapper that reuses a short flag letter.
+#   Cost of getting it wrong is invisible, so keep the split even when the
+#   current filter letters look unambiguous.
+#   CAUTION: <TEST_CMD_REGEX> doubles as the split point, so it must use
+#   NON-capturing groups '(?:...)'. PowerShell -split injects captured groups
+#   into the result array, so a capturing group makes [1] the captured text
+#   instead of the argument tail. Verified 2026-08-09:
+#     'x npm run test --testNamePattern y' -split '\bnpm\s+(test|run\s+test)\b',2
+#       -> [1] = 'run test'          (wrong string gets filter-checked)
+#     ...same with '(?:test|run\s+test)' -> [1] = ' --testNamePattern y'  (correct)
 #
 # Block rule:
 #   <TEST_CMD> with NO <SAFE_FILTER> AND NO <ESCAPE_VAR>=1 → block.
@@ -1728,7 +1772,11 @@ if ($cmd -match '<ESCAPE_VAR>\s*=\s*1' -or
 }
 
 # Allow if a scope-narrowing flag is present.
-if ($cmd -match '<SAFE_FILTER_REGEX>') {
+# Match the ARGUMENT TAIL after the runner name only -- see "Runner-name split"
+# in the header. Reusing <TEST_CMD_REGEX> as the split point keeps this at three
+# placeholders; it works for every runner listed above.
+$tail = ($cmd -split '<TEST_CMD_REGEX>', 2)[1]
+if ($tail -match '<SAFE_FILTER_REGEX>') {
     exit 0
 }
 
@@ -1762,12 +1810,20 @@ exit 2
 
 #### 本工程实例(参考):`.claude/scripts/block-unsafe-test-commands.ps1`
 
-填充示例(StutterAnalyzer .NET 项目):
+填充示例 1(StutterAnalyzer,.NET):
 - `<TEST_CMD_REGEX>` → `\bdotnet\s+test\b`
 - `<SAFE_FILTER_REGEX>` → `--filter\b`
 - `<ESCAPE_VAR>` → `STUTTER_ALLOW_FULL_TEST`
 
-完整文件已在仓库 `.claude/scripts/block-unsafe-test-commands.ps1`,可作为参考实现。
+填充示例 2(zd-tool,Python/pytest,2026-08-09 实测 17/17):
+- `<TEST_CMD_REGEX>` → `\bpytest\b`
+- `<SAFE_FILTER_REGEX>` → `(^|\s)-(k|m)(\s|=)` — **必须配合 runner-name split**,
+  否则 `python -m pytest` 里 Python 的 `-m` 会命中,hook 全线放行
+- `<ESCAPE_VAR>` → `ZDTOOL_ALLOW_FULL_TEST`
+- matcher → `Bash|PowerShell`(该机主 shell 为 PowerShell,只写 `Bash` 不触发)
+
+完整文件已在仓库 `.claude/scripts/block-unsafe-test-commands.ps1`,可作为参考实现;
+zd-tool 的版本在 `E:\opc_project\zd-tool\.claude\scripts\block-unsafe-test-commands.ps1`。
 
 ---
 
