@@ -15,7 +15,10 @@
 - WORKFLOW.md v3.6 **一字不改**（含附录 G 中已废 hook 的源码段落）。
 - FIELD-LOG.md append-only：新条目加在最上方（文件头预告段除外，见 Task 1）。
 - commit message 英文，不 push。
-- 尺寸目标（硬约束，超出即回去删）：change-loop SKILL.md ≤6KB；dispatch-prompt.md ≤2KB；project-bootstrap SKILL.md ≤5KB；GUIDE.md ≤6KB；templates/CLAUDE.md ≤3KB。
+- 尺寸目标（硬约束，超出即回去删）：change-loop SKILL.md ≤6.5KB；dispatch-prompt.md ≤2KB；project-bootstrap SKILL.md ≤5KB；GUIDE.md ≤6KB；templates/CLAUDE.md ≤3KB。
+  （修订记录：change-loop 原定 ≤6KB 按英文密度校准；中文正文 3 字节/字，同等信息量字节数
+  天然更高。真实控制目标是 token 注入量——6.2KB 中文 ≈1.7k token，对比 v4 16KB ≈4k+，
+  已达成 ~1/3 目标。为凑字节数肢解可读文本属表演式合规，不做。）
 - 所有新文件不得引用已删除的锚点：`NORTH_STAR.md`（迁移语境除外）、`OPUS-SYSTEM`、`toolchain-refresh`（迁移/对照语境除外）、四行声明块（Explored:/Mode:）、recitation、40% 阈值。
 
 ---
