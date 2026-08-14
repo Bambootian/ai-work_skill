@@ -1,9 +1,50 @@
 # Field Log（实测日志，append-only）
 
 > 工具包自身的 RED/GREEN 证据链，接棒 WORKFLOW.md 附录 H（已冻结）的版本备注职能。
-> 记录纪律（README 修改约定的落地点）：改 skill 正文之前，失败证据先记入本文件（RED）；
-> 改完补齐修复对照与验证证据，GREEN 观察项进 GUIDE §8 清单。
+> 记录纪律（README 修改约定的落地点）：改 skill 正文之前，证据先记入本文件（RED——
+> 运行时失败、使用投票、官方指导均为合法形态）；改完补齐修复对照与验证证据，
+> GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
+
+## 2026-08-14 — v5 减法重构：RED 证据与 ablation 台账
+
+### RED（改前证据；本次形态 = 使用投票 + 官方指导，非运行时失败）
+
+- **使用投票**（43 环节全量标注，2026-08-14 session）：已死 = 双模型架构（#7/#39）、
+  toolchain-refresh 常设化（#35/#36）；走过场 = spec 四件套人审（#16）、recitation（#18）、
+  证据包格式（#25）、R-revision 仪式（#28）、NORTH_STAR 独立文件（#38，设计为人独占修改，
+  实际已授权 AI 自动更新）；真实人工触点仅两个 = spec 前 brainstorm 问答、收尾真机验收。
+- **官方指导**：Anthropic《Prompting Claude Fable 5》："Skills developed for prior models
+  are often too prescriptive for Claude Fable 5 and can degrade output quality."
+  官方点名仍需外部支撑的四样：文件化持久记忆（实测 3x）、fresh-context 验证 subagent、
+  进度声明对照 tool result 审计、意图上下文+短指令范围纪律。OpenAI GPT-5.6 指南：
+  保留清单（结果/成功判据/停止条件/硬约束）恰为 Loop Contract 四字段；矛盾规则比缺失更伤；
+  删减用 ablation 方法论。
+- **主观基线**（改后对照用）：Opus 4.6 → Fable 5 用户无明显「变强」体感（与外界普遍体感相反），
+  假设为过度约束吞掉了能力增量。
+- 设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（五段逐段人工确认 + 两轮自检）。
+
+### Ablation 台账（复发 → 记一行含当时模型 → 只定点回装，不整体回滚）
+
+| 切除项 | 守护的失败模式 | 复发信号 | 回装方式 |
+|---|---|---|---|
+| 四行声明块→两行 | 跳过路由/模式判断 | 无声明出现 opsx/代码（warn-route-before-opsx 报） | 恢复格式块 |
+| Mode B 白名单法条 | 未审视意图直奔 spec | spec 返工 / R-revision 上升 | 恢复谓词清单 |
+| recitation | 长会话目标漂移 | 产出偏离 Outcome | 恢复每 task 复述 |
+| Rationalization/Red flags 表 | 借口式绕规则 | 借口原话再现 | 定点恢复对应条目 |
+| warn-apply-phase hook | apply 中途重跑 propose | 契约失效无法归因 | 重新注册 hook |
+| toolchain-refresh 常设 | 工具静默腐烂 | 命令突然失效/文档漂移 | 恢复 skill 或例行 |
+| 40% 上下文教条 | 上下文过载质量跳水 | 长会话遵循度衰减 | 恢复阈值纪律 |
+| NORTH_STAR 独立文件 | 价值锚稀释 | self-indulgence 未被拦截 | 恢复独立文件 |
+| cheap-model 规范块 | 降级派发质量事故 | 降级 subagent 产出胡编 | 恢复规范块 |
+
+### GREEN 观察位（下个真实项目 / 首个迁移项目，结果回填本条目）
+
+1. 无格式强制下 brainstorm 是否仍默认先行（头号观察位）
+2. 两行路由声明出现率；spec 返工 / R-revision 频次
+3. stuck 判据是否仍截住无效重试
+4. token 对比：change-loop 注入量（16KB→~5KB）、CLAUDE.md 常驻量
+5. 主观对照：「模型是否变聪明」体感 vs 上面的 RED 基线
 
 ## 2026-08-09 — bootstrap 三测（zd-tool，small 项目首次立项）
 
