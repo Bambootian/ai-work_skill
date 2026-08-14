@@ -73,6 +73,10 @@ my-work-skill/
 ## 4. change-loop v5 规格（16KB → ~5KB）
 
 frontmatter description 保持现触发语义（触发率已被实测验证），文字可微调不扩容。
+**触发锚点必须迁移**：v4 的「NORTH_STAR.md present」在 v5 指向已删除的文件——改为
+「项目 CLAUDE.md 含 North Star 段或强制路由声明」。project-bootstrap 的 description
+同步迁移：「finds NORTH_STAR.md or backlog.md missing」→「CLAUDE.md 缺 North Star 段
+（或中型项目缺 backlog.md）」。
 
 六节结构：
 
@@ -137,7 +141,7 @@ R0 纪律整段（缩为「R0 也先一句 verify 命令」）、Pre-spec Explor
 - my-work-skill clone: <绝对路径>（archive §5.8、hooks 源码在此解析）
 
 ## Session Start
-读 North Star 段和 backlog.md；找在途 change（openspec/changes/ 或根 SPEC.md）；
+读 North Star 段；中型项目另读 backlog.md；找在途 change（openspec/changes/ 或根 SPEC.md）；
 有则读 Loop Contract 后 ≤2 行报告状态并直接继续，只在 gate 或阻塞时问。
 
 ## Hard Rules
@@ -161,13 +165,16 @@ Review Log 表废除；value-review 节奏锚改为 `retros/` 最新文件日期
 
 ## 7. project-bootstrap v5 规格（8.3KB → ~4KB，四步）
 
-- **Step 0 装机**：不变（toolkit-path、pull + 复制 3 个 skill、前置检查
-  superpowers / openspec）。
+- **Step 0 装机**：toolkit-path、pull + 复制 3 个 skill、前置检查
+  superpowers / openspec；**同步删除 `~/.claude/skills/` 下工具包已移除的 skill
+  目录（toolchain-refresh）**——覆盖复制不清理死副本，死 skill 的触发词仍会命中。
 - **Step 1 立项 brainstorm**：不变（强制 superpowers:brainstorming）；产出槽位
   对应新 CLAUDE.md North Star 段 + 规模 + stack + heavy-test 三问。
 - **Step 2 回填**：CLAUDE.md 单文件；中型加 openspec init + ARCHITECTURE.md +
   backlog.md；人逐行确认后 commit；无 placeholder 存活。
 - **Step 3 hooks**：按 §8 终版部署；每个 hook echo 用例验证，粘贴输出。
+  warn-route-before-opsx 提示文案同步更新为两行声明（Route + Next），不再提
+  Explored/Mode 四行块。
 - **Step 4 收尾**：装机级 OpenSpec 命令面 break-check 一次（toolchain-refresh 遗产）；
   commit；声明「第一个 change 从 change-loop 路由开始」。
 
@@ -195,6 +202,8 @@ hook 源码权威位置不变（WORKFLOW.md 附录 G）；附录 G 中被删 hoo
 - 触发表原样保留（信号 + 节奏兜底，节奏锚见 §6）。
 - 五步流程压缩为简短占位：核销上轮承诺 → 对照 North Star 段逐 change 一行分类 →
   写 retro 交人决策。
+- 正文引用锚全部迁移：NORTH_STAR.md → 项目 CLAUDE.md North Star 段；
+  Review Log → `retros/` 目录（最新文件日期即上轮回顾时间）。
 - 「设计真正有价值的工程复盘」为 v5 落地后的第一个独立 change（已拍板不揉进本次）。
 
 ## 10. GUIDE v5 结构（~5KB）
@@ -250,10 +259,12 @@ hook 源码权威位置不变（WORKFLOW.md 附录 G）；附录 G 中被删 hoo
 
 ## 13. 实现顺序建议
 
-1. GUIDE.md v5 重写 + README 更新（约束先行：文档先落）
-2. change-loop SKILL.md + dispatch-prompt.md 重写
-3. templates/CLAUDE.md 重写；删 NORTH_STAR.md / OPUS-SYSTEM.md / quickstart.html
-4. project-bootstrap 重写；删 toolchain-refresh/
-5. FIELD-LOG.md 记 ablation 台账 + 本次改造条目；kb_deposit（§7 决策记录 + 本次
-   重构决策）
-6. 部署到本机 ~/.claude/skills/（覆盖复制）
+1. FIELD-LOG.md 先记本次 RED 证据（使用投票 + 官方指导摘要）+ ablation 台账
+   ——满足 README 修改约定「先有失败证据，再改 skill 正文」；本次的「失败证据」
+   形态是使用投票与官方文档，非运行时失败，README 修改约定补一句注明此类证据合法
+2. GUIDE.md v5 重写 + README 更新（约束先行：文档先落）
+3. change-loop SKILL.md + dispatch-prompt.md 重写
+4. templates/CLAUDE.md 重写；删 NORTH_STAR.md / OPUS-SYSTEM.md / quickstart.html
+5. project-bootstrap 重写；删 toolchain-refresh/
+6. kb_deposit（§7 决策记录 + 本次重构决策）
+7. 部署到本机 ~/.claude/skills/（覆盖复制 + 删除 toolchain-refresh 旧副本）
