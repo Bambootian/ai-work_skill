@@ -1,143 +1,100 @@
 ---
 name: change-loop
-description: Use when starting any development change — feature, bugfix, refactor, or the first change after project bootstrap / 立项 — in a project using this workflow (NORTH_STAR.md present, or CLAUDE.md mandates route declaration). Invoke BEFORE any opsx command (propose/apply), spec writing, solution brainstorming, or code; also when picking an item from backlog.md, and when resuming an in-progress change after a session break or context compaction.
+description: Use when starting any development change — feature, bugfix, refactor, or the first change after project bootstrap / 立项 — in a project using this workflow (the project CLAUDE.md has a North Star section or mandates route declaration). Invoke BEFORE any opsx command (propose/apply), spec writing, solution brainstorming, or code; also when picking an item from backlog.md, and when resuming an in-progress change after a session break or context compaction.
 ---
 
 # Change Loop
 
-## Overview
+每个 change 是一个有契约、有预算、三态出口的循环。人工触点两个：spec 前的 brainstorm
+问答、收尾的真机验收；gate 之间由 AI 自治。循环体：**每迭代恰好一个 task，绿进绿出，
+逐 task commit。**
 
-Every change runs as a routed, budgeted loop with three explicit exit states. The human reviews evidence at gates; the AI controls everything between gates. The loop body is deliberately simple: **one task per iteration, start green, end green, committed.**
+## 1. Route（任何 spec / opsx 命令 / 代码之前）
 
-**Violating the letter of a gate is violating its spirit.**
-
-## Step 1 — Route (always, before anything else)
-
-Judge by novelty × reversibility × blast radius. When torn between two routes, take the higher. Upgrading mid-change is normal — state it. Silent downgrading is forbidden.
-
-**Step 1's output is this block — all four lines, posted before any spec, opsx command, or code. A bare route statement without the block is not a route** (a "R2 standard" one-liner is two skipped judgments: blast radius unread, spec mode unexamined):
+按 novelty × reversibility × blast radius 判断，声明两行：
 
 ```
-Route: R<0-3> <name> — <one-line justification: novelty × reversibility × blast radius>
-Explored: <files/patterns read before declaring> | none — request alone suffices because <reason>
-Mode: A | B(predicate 1|2|3) + ≤3-sentence restatement | n/a (R0)
-Next: <first process step this route prescribes — brainstorm / SPEC-lite / opsx propose / test>
+Route: R<0-3> — <一行理由>
+Next: <brainstorm | SPEC-lite | opsx propose | test>
 ```
 
-**Look before you route.** Routing judges blast radius, and blast radius lives in the code. If the route isn't obvious from the request alone, run a read-only explore first (search / read, no writes), then declare. Every declared route is provisional until first contact with the code. And before writing any spec (SPEC-lite or propose), explore what you'll touch — files, existing patterns, contracts — and state what you found. Assumptions about existing code are verified by reading it, never recalled.
+- **R0 直行**：一次 commit 可逆、无 spec/架构/数据契约影响、≤1 小时 → 测试→代码→commit。
+  开工前一句话说明 verify 命令与期望结果，commit 前展示其输出。
+- **R1 轻量**：意图 2–3 句说得清、单 capability、无新架构决策/外部依赖 → SPEC-lite。
+- **R2 标准**：新 capability、跨模块、或新外部依赖 → OpenSpec propose 四件套；
+  spec 经人批准后进循环。
+- **R3 架构**：动 ARCHITECTURE 决策、数据契约或 North Star 边界 → 先与人定方向，再走 R2 流程。
 
-| Route | Criteria (all must hold) | Process | Gate review |
-|---|---|---|---|
-| **R0 direct** | Reversible in one commit; no spec/architecture/data-contract impact; ≤ ~1 hour | Test → code → commit | Inline self-check |
-| **R1 light** | Intent fits 2–3 sentences; single capability; no new architecture decisions or external deps | Mode judgment → (A: brainstorm) → SPEC-lite (Goal / Non-goals / Scenarios / Verify) → loop | 1 independent reviewer subagent at close |
-| **R2 standard** | New capability, crosses modules, or new external dependency | Mode judgment → (A: brainstorm) → full propose (proposal / design / tasks / spec) → loop | 2 subagents (spec-compliance + code-quality) at close + human spec approval up front |
-| **R3 architectural** | Touches ARCHITECTURE decisions, data contracts, or NORTH_STAR scope | Brainstorm first (always Mode A) → ARCHITECTURE update → then R2 process | 3 lenses (spec, architecture, skeptic) at close + human decides direction up front |
+三条规则：**没读过要动的代码不路由**——路由判断的是爆炸半径，半径在代码里，先只读
+explore 再声明，对既有代码的假设靠读取验证、不靠回忆。**默认先 brainstorm**
+（superpowers:brainstorming）——仅当手上已有具体证据工件（bug 复现 / verify 输出 /
+评审发现）或用户明说跳过时直接写 spec，跳过前用 ≤3 句复述意图与边界。
+**拿不准取高一级**，中途升级正常但要声明，静默降级禁止。
 
-**Spec-formation mode (R1 and above, after routing).** Default is **Mode A** — exploratory brainstorm (superpowers:brainstorming) before spec. Fluent wording in the request is NOT evidence of examined intent; do not judge clarity from text. Go **Mode B** (checklist review, no brainstorm) only when an observable predicate admits it:
-
-1. **Evidence-born**: the change originates from a concrete artifact in hand — failing verify/dry-run output, bug repro, R-revision follow-up, review finding. The evidence seeds the spec.
-2. **Pattern extension**: extends an archived capability along an existing living-spec pattern; no new external deps, no new architecture decisions.
-3. **Explicit call**: the user says "Mode B" or hands over a written plan.
-
-Before Mode B proceeds, restate intent / boundary / key decisions in ≤3 sentences and show them — R2+ confirms at the spec gate; R1 proceeds unless corrected. Cannot fill the restatement → that IS the Mode A signal.
-
-**Mode binds the declaration's `Next` line.** Mode A → `Next` is superpowers:brainstorming; the spec artifact (SPEC-lite / propose) is written from its output, never before it. Mode B → `Next` is the spec artifact itself, after the restatement is shown. `Mode: A` with `Next: opsx propose` is self-contradictory — stop and fix the block. Route and Mode are orthogonal judgments: Route picks the spec's form and gates; Mode decides whether brainstorm precedes it. **R2 does not lean Mode B — the opposite**: route criteria are not whitelist predicates, and an R2 born from a new external dependency fails predicate 2 by definition. Most R2s are Mode A.
-
-**Mode B tripwire (mandatory).** During the checklist, ≥2 answers land "no / uncertain" on boundaries, dependencies, or implicit constraints — or any semantic ambiguity surfaces → stop, state the switch, go Mode A. A wrong Mode B costs a rework cycle; a wrong Mode A costs minutes. When torn, Mode A.
-
-**Pre-spec explore declaration (R1 and above — WORKFLOW.md §5.3).** After Mode A's brainstorm (or Mode B's restatement), immediately before writing the spec artifact (SPEC-lite / opsx propose), post one line:
-
-```
-Explore: needed — <reason> → opsx explore before the spec | not needed — <reason>
-```
-
-Three triggers, any one → needed: existing code must be understood before specifying; more than one viable technical approach is still unresolved; a new external dependency surfaced. The route-time `Explored:` line does not substitute — it recorded what was read *before* routing; this line certifies nothing new needs reading *after* the brainstorm's output landed. Non-OpenSpec projects: an equivalent read-only investigation with findings stated.
-
-**R0 discipline.** R0 has no contract, but it still states — in one line, before starting — its verify command + expected result, and shows that output before committing. An R0 that fails its first attempt, exceeds ~1 hour, or turns out to touch spec/architecture/data contracts is not R0: re-route to whatever the criteria table demands (spec impact → R1/R2; architecture or data contracts → R3) and write the contract (failure notes live there). Half-done work at re-route time: tree green → commit it as the new route's first task; tree red → reset to the anchor first.
-
-## Step 2 — Loop contract (R1 and above)
-
-Before implementation, write into the change's `tasks.md` (or SPEC-lite) header:
+## 2. Loop Contract（R1+，写进 tasks.md 或 SPEC-lite 头部）
 
 ```markdown
 ## Loop Contract
-- Outcome: <one sentence in user-visible vocabulary — what does the user get?>
-- Verify: <NAMED commands + expected result, e.g. `dotnet test --filter Xyz` → 0 failed,
-  `app.exe --demo scenario3` → produces report. "Tests pass" without commands is invalid.>
-- Budget: <max days> total; per task max 5 iterations
-- Exit states: DONE (all Verify green + Outcome landed)
-             | BLOCKED (blockers + attempts appended below; escalate to human)
-             | SPLIT (budget exceeded or task found composite → propose split)
+- Outcome: <一句用户可见词汇——用户得到什么>
+- Verify: <具名命令 + 期望输出。"测试通过"四个字无效>
+- Budget: <max 天数>；每 task 最多 5 次迭代
+- Exit: DONE（Verify 全绿 + Outcome 落地）| BLOCKED（blockers 附后，升级给人）
+      | SPLIT（超预算或发现复合任务 → 提拆分方案）
 ```
 
-If Outcome can only be written in implementation vocabulary (refactor / unify / abstract / coverage), this is enabling work: name the user-visible change it unblocks and when that lands (≤2 changes). Cannot name one → take it to `value-review` before proceeding.
+Outcome 只能用实现词汇写出（重构/统一/抽象/覆盖率）→ 这是 enabling 工作：指名它解锁的
+user-value 与落地时点（≤2 个 change）；指不出 → 先走 value-review。
 
-**Where SPEC-lite lives (R1).** One file containing Goal / Non-goals / Scenarios / Loop Contract: OpenSpec projects → `openspec/changes/<change-id>/spec-lite.md` (CLI validate applies to R2+ four-artifact changes, not R1); other projects → `SPEC.md` at repo root, moved to `docs/changes/` at close. Root `SPEC.md` therefore belongs to **one change**, never to the project: a small project's permanent design doc is `DESIGN.md` (WORKFLOW.md 第 6 部分). Naming the permanent doc `SPEC.md` makes toolchain-refresh's mid-change guard fire forever and makes this close step move the project's design into `docs/changes/`.
+R1 SPEC-lite（Goal / Non-goals / Scenarios / Loop Contract 单文件）位置：OpenSpec 项目
+`openspec/changes/<change-id>/spec-lite.md`；其他项目根目录 `SPEC.md`，收尾移入
+`docs/changes/`。根目录 `SPEC.md` 属于**一个 change**、不属于项目——项目常设设计文档叫
+`DESIGN.md`。
 
-## Step 3 — Inner loop (autonomous)
+## 3. 内环（自治）
 
-**Iteration invariant: exactly one task per iteration; the tree is green and committed at every task boundary.**
+每 task：读 scenario → 有运行时行为先写失败测试 → 最小实现 → 绿 → 自审 diff → commit →
+下一个。task 之间不请示，只报进度。
 
-Per task: recite in one line (contract Outcome + current task — keeps the global goal in recent attention) → read scenario → failing test if there is runtime behavior → minimal code → green → self-review the diff (the graded reviewer panel from the route table runs at gates, not per task) → commit → next task. Report progress; do not ask permission to continue between tasks.
+- **只在绿提交**；最后一个绿 commit 是回退锚点（新仓库先把测试骨架跑绿提交，立锚）。
+  迭代结束树是坏的：`git reset --hard` 回锚点 → 失败注记（task id + tried / observed /
+  hypothesis）append 进契约 → 立即 docs-commit（保注记跨越未来的 reset）→ 换思路重试或
+  BLOCKED。fix-forward 仅限迭代内，不跨 task 边界；不从红树开新 task。
+- **每次失败尝试都记注记**（不止坏树的）：注记就是尝试计数器——对话记忆不跨 compaction，
+  文件跨。
+- **Stuck 判据（任一命中即停止换说法重试）**：空 diff 迭代；同一错误签名连续 2 次；
+  修 A 坏 B 坏 A 往返一圈。命中（或 5 次上限）→ 写注记 → superpowers:systematic-debugging。
+  诊断 = 复合任务 → 拆分（spec 范围内自治改 tasks.md 继续；动 spec/范围/预算 = change 级
+  SPLIT，停下交人）；其余未解 → BLOCKED。计划与现实脱节（R-revision 后漂移）→ 从 spec
+  重生成剩余 tasks，不逐行补丁。
+- 语义模糊（需求含义 / 边界 / 设计意图）停下问人；实现模糊自选合理项、注记一行、继续。
 
-**Rollback (green anchor).** Commit only on green; the last green commit is the rollback anchor. In a fresh repo, create the anchor first: commit the scaffold as soon as the test harness runs green. If an iteration ends with a broken tree: `git reset --hard` to the anchor → append a failure note (task id + tried / observed / hypothesis) to the contract → **commit the note immediately** (a docs-only commit is green by construction; this is what keeps failure notes alive across future resets) → retry differently or exit BLOCKED. Fix-forward is allowed *within* an iteration, never *across* task boundaries. Never start a task from a red tree.
+## 4. Subagents（单层扁平扇出）
 
-**Track attempts in the open.** Every failed attempt appends a failure note (task id + tried / observed / hypothesis) to the contract — not only tree-breaking ones. The task id is what keeps the per-task count recoverable when notes from several tasks interleave. The committed notes ARE the attempt counter: model memory does not survive compaction; notes do.
+subagent 看不到你的任何上下文：项目硬规则、测试命令纪律、本 change 契约，按本目录
+`dispatch-prompt.md` 的槽位**逐字重述**，每次都是。**禁止 subagent 再派 agent。**
+高噪音工作（全量测试日志、构建考古）隔离到 subagent，只回 ≤2k token 摘要。
 
-**Stuck predicates — any one fires → stop re-prompting harder:**
-- An iteration produced an empty diff
-- The same error signature appeared in 2 consecutive iterations
-- A fix-A-breaks-B-breaks-A round trip completed once
+gate 评审用 fresh-context reviewer（只给 diff + spec + 标准，不给产生代码的推理过程），
+按路由分级：R0 inline 自检 / R1 单 reviewer / R2 双视角（spec 合规 + 代码质量）/
+R3 三视角（+ skeptic）+ 人。发现分诊：[blocking] = 违反 spec/契约，或真实缺陷
+（正确性 / 资源泄漏 / 数据丢失 / 安全）——必修；[nit] = 风格与「可以更好」——记录不追。
 
-Then (also when the 5-iteration cap hits): write the 3-line failure note → superpowers:systematic-debugging. The diagnosis decides the exit: root cause = composite task → split it; anything else unresolved → exit BLOCKED. A task split that stays within the approved spec scope is autonomous — edit `tasks.md` and continue the loop. A split that would change scope, spec, or the change budget is the change-level exit state SPLIT — stop and surface it to the human. If the plan no longer matches reality (post R-revision drift), regenerate the remaining tasks from the spec — don't patch the list line by line.
+## 5. Close（证据 gate）
 
-**Subagents.** Dispatch with the slot template in this skill's `dispatch-prompt.md` — every REQUIRED slot filled. Every subagent prompt MUST restate: project hard rules, test-command constraints, and this change's loop contract. Subagents see none of your context. Route noisy work (full test logs, build output archaeology) through subagents to keep the loop's context clean.
+- 每条 Verify 命令的真实输出粘贴（不概述、不「应该过」）。
+- Outcome 一行：用户可见的东西落地了吗。
+- 出口态声明：DONE / BLOCKED / SPLIT；跳过或合并的环节（如 WORKFLOW §5.6 Verify /
+  §5.7 Polish——它们是 judgment call 不是必选项）明说并给理由。
+- 按 WORKFLOW.md §5.8 archive（toolkit clone 路径在项目 CLAUDE.md 的 Toolkit 行）。
+- archive 后查节奏：`retros/`（OpenSpec 项目 `openspec/retros/`）最新文件起 ≥5 个
+  archive 或 ≥4 周 → 现在触发 value-review。这一步就是节奏强制，不靠记忆。
 
-**Model routing per dispatch.** Default = inherit the session model. Downgrade to a cheaper tier only when the output is mechanically verifiable (tests / diff / schema) or purely informational (exploration, inventory, log summaries) — and then paste the cheap-model operating rules block from this skill's `dispatch-prompt.md` verbatim. Never downgrade a judge: gate reviews, spec self-review, and root-cause diagnosis run at session tier or stronger. Cheap producer + strong-or-mechanical verifier is safe; strong producer + cheap verifier is the worst combination.
+## 6. Session 边界（land the plane）
 
-**Stop the loop only when:** a gate is reached; a stuck predicate or exit state fires; or a **semantic** ambiguity appears (spec meaning, requirement boundary) — implementation ambiguity is yours: pick the reasonable option and note it.
+task 组结束、任何 gate、或 harness 警告上下文时收工：更新 tasks.md 勾选与契约状态，
+写 2–3 行 next-session brief（当前 task / 下一步 / 悬而未决）进 change 的 CLAUDE.md。
+文件携带状态，不靠对话。
 
-## Step 4 — Close (evidence gate)
-
-Assemble and present the evidence bundle:
-- Each Verify command with real output pasted (not summarized, not "should pass")
-- Outcome check: did the user-visible outcome land? One line.
-- Exit state declared: DONE / BLOCKED / SPLIT. Anything skipped or deferred, stated plainly — including the named WORKFLOW.md phases (§5.6 Verify, §5.7 Polish). Those are judgment calls, not per-change mandates: judge by task and state, run them directly when warranted (no asking), and when skipped the archive report states which and why (e.g. "5.6.1 absorbed by the gate reviewer's requirement-coverage table", "no source code → code-simplifier n/a").
-
-Then archive per project convention (OpenSpec seed/merge steps: WORKFLOW.md §5.8 in the my-work-skill toolkit repo — clone path is on the project CLAUDE.md `Toolkit` line; the toolkit is not copied into projects). After archiving, check NORTH_STAR.md's Review Log: ≥5 archives or ≥4 weeks since the last value review → trigger `value-review` now. This check IS the cadence enforcement — don't rely on remembering.
-
-## Session boundaries (land the plane)
-
-Land the plane at task-group ends, at any gate, and immediately when the harness warns about context or compaction: update `tasks.md` checkboxes + contract state, then write a 2–3 line next-session brief (current task, next action, open question) into the change's `CLAUDE.md`. Prefer a fresh session per task group over marathon sessions — effective context degrades well before the window fills (~40% working set); files carry the state, not the conversation.
-
-Resuming: `git status` first — uncommitted changes mean an interrupted iteration: finish that single iteration if the trail (failure notes + tasks.md) makes the state clear, otherwise reset to the anchor. Then read Loop Contract + `tasks.md` + change `CLAUDE.md`. Report state in ≤2 lines. Continue the loop — do not ask "what should I do next" unless at a gate or blocked.
-
-## Rationalizations
-
-| Excuse | Reality |
-|---|---|
-| "This is tiny, skip routing" | Routing IS the 10-second step that decides what to skip. State R0 and go. |
-| "Brainstorm/立项 just finished — propose is obviously next" | Bootstrap ends OUTSIDE the loop. The first change opens with the Route Declaration block like every other; propose is a possible `Next:`, never the starting point. |
-| "I stated R2, routing is done" | The declaration is four lines. A route without Explored and Mode is two skipped judgments, and skipped judgments are exactly what this step exists to force. |
-| "The request is well-written, so intent is clear — Mode B" | Fluent wording ≠ examined intent. Mode B needs a named whitelist predicate, not a vibe. |
-| "R2's process is full propose, so run propose now" | The Process column starts at Mode judgment. Route picks the artifact; Mode decides whether brainstorm comes first — and most R2s are Mode A. |
-| "Tests pass, so it's done" | The contract names the Verify commands. Run those, paste output. |
-| "I'll fix the broken tree in the next task" | Red tree at a boundary = reset to anchor. Fix-forward across tasks is how drift compounds. |
-| "One more retry with a better prompt" | A stuck predicate fired. Harder re-prompting is the same approach; the contract says debug or BLOCKED. |
-| "Two small tasks in one go is efficient" | One task per iteration is the invariant. Batching is how oscillation starts. |
-| "The subagent will know the rules from context" | It won't. Restate constraints in the prompt, every time. |
-| "I'll upgrade the route later if needed" | Later = after an un-gated architecture change already happened. Doubt → higher route now. |
-
-## Red flags — STOP
-
-- Writing code before stating a route
-- Running an opsx command (propose/apply) with no Route Declaration block earlier in the session
-- A `Route:` line not followed by `Explored:` / `Mode:` / `Next:` lines
-- A declaration whose Mode and Next lines contradict (`Mode: A` + `Next: propose/SPEC-lite`)
-- Entering Mode B without naming which whitelist predicate admitted it
-- A spec artifact (SPEC-lite / propose) written with no `Explore:` declaration since the brainstorm/restatement
-- A completion claim with no command output behind it
-- A red tree at a task boundary, or starting a task from a red tree
-- The same error message twice in a row and you're still tweaking the same idea
-- An Outcome written only in implementation vocabulary
-- Changing spec or architecture on route R0/R1 without upgrading the route
+恢复：`git status` 先行——有未提交改动 = 中断的迭代：注记与 tasks.md 能说清状态就收完
+这一个迭代，说不清就 reset 回锚点。然后读契约 + tasks.md + change CLAUDE.md，
+≤2 行报告状态，直接继续循环——只在 gate 或阻塞时问。
