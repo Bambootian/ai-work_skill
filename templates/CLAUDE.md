@@ -1,48 +1,34 @@
 # Project: <name>
 
 ## North Star
-
-<one sentence: who gets what>. Full version + outcome taxonomy: `NORTH_STAR.md`.
+- 一句话：<谁，通过这个项目，得到什么>
+- 成功判据（用户可观察）：<1–3 条>
+- 当前阶段重点：<一句话>
+- 永不做（anti-scope）：<...>
+- Outcome 三分类：user-value（用户可直接观察）/ enabling（指名 ≤2 个 change 内
+  解锁的 user-value）/ self-indulgence（只有实现词汇且指不出解锁什么 → value-review）
 
 ## Stack & Conventions
-
-<fill per project: language, build/test commands, test filter flags, style>
+<语言、build/test 命令、test filter flags、风格约定>
 
 ## Toolkit
+- my-work-skill clone: <绝对路径>（archive §5.8、hooks 源码在此解析）
 
-- my-work-skill clone: <absolute path — bootstrap 填>. WORKFLOW.md references (附录 G hooks,
-  §5.8 archive) resolve there; deployed skills live in `~/.claude/skills/`.
+## Session Start
+读 North Star 段；中型项目另读 backlog.md；找在途 change（openspec/changes/ 或根 SPEC.md）；
+有则读 Loop Contract 后 ≤2 行报告状态并直接继续，只在 gate 或阻塞时问。
 
-## Session Start Protocol
-
-1. Read `NORTH_STAR.md`, `backlog.md` (missing → project not bootstrapped: run the `project-bootstrap`
-   skill — brainstorm 立项 first, artifacts backfilled from it — before any change); find any
-   in-progress change (`openspec/changes/`, or root `SPEC.md` — that file is change-loop's
-   spec-lite for ONE change; a small project's permanent design lives in `DESIGN.md`).
-2. If one exists, read its Loop Contract + `tasks.md` + change `CLAUDE.md` (if present).
-3. Report state in ≤2 lines, then CONTINUE the loop. Ask only when at a gate or blocked.
-
-## Hard Rules (always)
-
-- Route every change via the `change-loop` skill BEFORE any opsx command, spec, or code — the
-  four-line Route Declaration block (Route/Explored/Mode/Next) comes first, including for the
-  first change right after bootstrap.
-- Every change names a user-visible Outcome; implementation-vocabulary-only outcomes go to `value-review`.
-- No completion claims without running the named Verify commands and pasting output. "Should work" is banned.
-- Commit only on green; the last green commit is the rollback anchor. A broken tree at a task
-  boundary is reset to the anchor, never fixed forward into the next task.
-- Tests are load-bearing: never delete or weaken a failing test to get green. Changing expected
-  behavior goes through R-revision (stop, fix spec, validate, resume).
-- External libraries/APIs verified to exist before use — training memory is not verification.
-- No unrequested scope: no extra features, configurability, abstractions, or drive-by refactors.
-- Subagent dispatch uses the `dispatch-prompt.md` slots (in the change-loop skill directory);
-  constraints restated verbatim, every time.
-- Semantic ambiguity (requirement meaning, boundary, design intent) → stop and ask.
-  Implementation ambiguity (detail, style) → pick the reasonable option, note it, keep moving.
+## Hard Rules
+- 任何 change 先经 change-loop 路由，再动 spec 或代码
+- 完成声明必须附真跑的 Verify 输出；「应该能跑」是禁语
+- 只在绿提交；task 边界坏树 reset 回绿锚点，不带病前进
+- 测试是承重墙：不删除、不弱化失败测试换绿；改预期行为先改 spec
+- 外部库/API 先验证存在再使用，训练记忆不算验证
+- 不加未被要求的范围
+- 语义模糊停下问；实现模糊自决并注记一行
+- subagent 派发用 dispatch-prompt.md 槽位、约束逐字重述；subagent 禁止再派 agent；
+  浏览器/网页抓取类派发降级 Sonnet 或更低
 
 ## Enforcement
-
-Hooks in `.claude/settings.json` enforce test-command discipline, route-before-propose reminders,
-destructive-op warnings, and toolchain staleness (deployed by `project-bootstrap` from WORKFLOW.md
-附录 G sources in the toolkit clone). Phase procedure lives in skills: `project-bootstrap`,
-`change-loop`, `value-review`, `toolchain-refresh` — not in this file.
+hooks 见 .claude/settings.json（heavy-test / destructive-git / block 类，
+由 project-bootstrap 部署）
