@@ -6,6 +6,117 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-08 — v5.1 主线锚定：四项用户报告 + 两条 harness 静默失效
+
+### RED（改前证据；形态 = 用户实践报告 + 实测度量 + harness 实跑）
+
+- **用户报告（v5 实践一轮后，原话要点）**：① backlog「越来越复杂……session 起始必读……AI 读着很耗
+  token、容易有遗漏，人阅读起来也非常的不清晰」；② 起 fresh-context reviewer「经常被会话规则说无用户
+  批准不允许调用 subagent 的规则挡……有时甚至自行就在本会话中直接跑了，脱离了工作流的设计」；
+  ③ propose 产物「应该每次在生成后加一轮起 subagent 做内容的对抗式自检……确实每次都能自检出不少问题」；
+  ④ value-review「只是在回顾……是否是技术自嗨」，要的是「最终想要的效果……主线路径是什么……是否偏离
+  ……离主线还多远」，且「5 个 change 的触发……小 change 做完就到 5 个了……中间突然起一次，反而效果很差
+  ……review 出来觉得要新开 change……只是在钻牛角尖解决一些支线的小问题」。
+- **实测度量**：backlog.md——new_review_create 340KB / 2,326 行，zd-tool 185KB / 2,398 行，
+  finance_tool 12.7KB / 38 行（单行最长 2.9KB）。retro——new_review_create 6 份 6→37KB，
+  zd-tool 6 份 12→41KB，finance_tool 3 份 5→10KB；计数触发最短间隔 1 天。
+- **结构化审读**（10 个 fresh-context reader，4 份 backlog + 14 份 retro + 1 份回顾输入；摘要见 v5.1 spec §2.7）：
+  backlog 从未删除任何内容、交接叠 12–16 层、≥12 类内容无家；retro 逐 change 三分类 40+ 个 change
+  零次判出 self-indulgence、North Star 检查从未失败、全部没有「终点→路径→距离」段、一个窗口 5/5
+  archive 全是上轮 retro 提案、两个项目各一个单点兔子洞无人标注。
+- **harness 事实 1**（claude-code-guide 查官方文档）：Agent 派发本身不触发权限、无任何系统规则要求先问
+  人；只有 Workflow（多 agent 编排）有 opt-in 规则 → 「无批准不许派」是模型把后者错推到前者。
+- **harness 事实 2（静默失效，实跑）**：Claude Code 2.1.259，三个探针 hook 挂在一次 `claude -p`：
+  PreToolUse exit 0 + stdout 的标记**未出现**在模型回答里；PreToolUse JSON `additionalContext` 与
+  PostToolUse exit 2 + stderr 的标记出现。⇒ 附录 G「Tier 2 = exit 0 + stdout」写法模型看不见，
+  `warn-route-before-opsx` / `warn-destructive-git`（PreToolUse）自部署起一直静默失效；SessionStart
+  类 hook（warn-toolchain-stale、finance_tool 的 warn-due-checkpoints）纯文本 stdout 本就进上下文，
+  不受影响。FIELD-LOG 2026-07-07 的「hook 脚本实跑 5 用例」测的是脚本有输出，不是模型收到。
+- **harness 事实 3（静默失效，实跑）**：PowerShell 5.1 按 ANSI（cp936）读无 BOM UTF-8——① 脚本含
+  中文注释时可能吞掉后续字节：本次整行中文注释 → 本应输出的用例全部变成无输出、exit 0；评审者复现
+  行内中文注释 → 吞掉 `}` 报解析错误 exit 1；改纯 ASCII 后通过。② **stdin 同样按 cp936 解**，而
+  Claude Code 送的是 UTF-8：含中文的真实 backlog 载荷（奇数个汉字 + `\"`）让 ConvertFrom-Json 失败、
+  hook 静默 exit 0——两位 fresh-context reviewer 用 zd-tool / new_review_create 的真实 backlog 内容
+  独立复现。修法：读 stdin 前 `[Console]::InputEncoding = UTF8Encoding($false)`，坏 JSON 显式 exit 1。
+
+### 修复（v5.1，契约 `docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`）
+
+| 报告 | 修复 |
+|---|---|
+| ① backlog | `templates/backlog.md`（Now/主线/支线/Done，≤8KB，Now 整段覆盖、债务结转）+ GUIDE §6 归属表（含 docs/decisions.md、docs/watchlist.md）+ `warn-backlog-size` hook（PostToolUse，>8KB 报模型）+ bootstrap 瘦身迁移 |
+| ② 拒派 / inline 替代 | CLAUDE.md 模板常设授权行（点名 Workflow opt-in 不适用）；change-loop §4 同句；Close 必填 `Gate:` 行，没跑 = DONE-ungated（zd-tool 2026-09-02 R1 推广） |
+| ③ spec 自检 | change-loop §2 末 Spec critic（分级）；dispatch-prompt.md「Spec critic 变体」7 条清单（v3 §5.4 Step 4 压缩回装） |
+| ④ 回顾 | value-review 重写：route check（终态/主线快照/支线/待做/偏离/距离/下一步）+ project review（North Star/判据/轨迹/死胡同/贬值/建议）；触发 = 主线里程碑 / 支线计数 ≥3（route check 后清零，外部事件阻塞时暂停）/ 4 周 backstop / 板块收官 / 8 周 / 模型换代，检查点在下一个 change 路由前；最多提 1 个主线 change；回顾只读 |
+| harness 2/3 | bootstrap Step 3 两条写法法则（可见性 / 编码：ASCII + stdin UTF-8）；内联 `warn-route-before-opsx` 改 JSON additionalContext；`warn-destructive-git` 部署时同法改（附录 G 冻结不动）；`warn-backlog-size` 加 Bash/PowerShell 分支（bypass 模式下模型走 Bash 改文件） |
+
+### 验证（2026-09-08）
+
+- hook echo（PowerShell 执行，`cmd /c "chcp 936 >nul & powershell -NoProfile -File x.ps1 < in.json"`，
+  in.json 为无 BOM UTF-8 且含中文）13/13：
+  - A 中文目录下 12.9KB backlog.md + 含奇数汉字与 `\"` 的 content → stderr `backlog.md is 12.9KB; budget is 8KB ...` exit 2 ✅
+    对照：同载荷、去掉 InputEncoding 行的脚本 → `bad stdin JSON` exit 1（原写法则静默 exit 0）
+  - B 小 backlog.md（Edit 载荷含中文）→ 静默 0 ✅；C 其他文件 13KB → 静默 0 ✅；H 目录名为 backlog.md → 静默 0 ✅
+  - D Bash heredoc 追加 backlog.md、cwd 下 12.9KB → exit 2 ✅；E 不涉及 backlog 的 Bash → 静默 0 ✅
+  - F 8192 B → 静默 0 ✅；8193 B → exit 2 ✅；G 坏 JSON → `bad stdin JSON` exit 1 ✅
+  - I `opsx:propose` → `{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"This project requires a change-loop route declaration ..."}}` exit 0 ✅；
+    `opsx:proposed` / `change-loop` → 静默 ✅；坏 JSON → exit 1 ✅
+- 模型可见性实跑（`claude -p`，haiku，三个探针 hook）：`{"seen": ["HOOKMARK-PRE-JSONCTX-4412", "HOOKMARK-POST-EXIT2-9905"]}`
+  （PRE-STDOUT 标记缺席）。
+- 存量项目 hook 脚本核查：4 个项目 24 个 `.ps1`，10 个含非 ASCII 字节（注释 / 字符串里的破折号、
+  中文），实跑 Tier 1 hook 仍正常——编码陷阱未伤及存量；但 `warn-route-before-opsx` /
+  `warn-destructive-git`（及旧项目的 warn-apply-phase）为 PreToolUse exit 0 + stdout 写法，模型看不见，
+  需按 bootstrap Step 3 重部署。
+- 尺寸（实测，定稿）：见本条目末「自检结果」表。
+
+### 自检结果（8 视角 fresh-context 对抗评审，2026-09-08）
+
+视角：用户意图保真 / 可执行性 / 跨文件一致 / 减法原则 / harness 事实（拉官方文档）/ 知识库约束 /
+用 zd-tool 真实内容试穿模板 / hook 脚本实跑。117 条发现（47 blocking），首批 12 条 blocking 各经
+3 个反驳者复核后，验证扇出因配额停止（用户叫停），其余由作者逐条核对裁决。采纳并落地的实质修正：
+
+1. hook stdin 编码（两位 reviewer 独立实测）与 Bash 分支；「80 行 ≈ 8KB」假等式 → 统一 8KB 预算；
+   8193 B 边界（先取整再比较）修正；坏 JSON 显式 exit 1；正则加尾锚；提醒文案改条件式事实句。
+2. 支线计数触发：route check 后清零；检查点移到下一个 change 路由前（不在 Close 打断批次）；
+   主线阻塞于外部事件时暂停；偏离判据与触发条件解耦并先写一行量。
+3. 路由声明加 `主线:` 行；主线段只经回顾批准增删——堵住「Close 自报主线」让触发失效的口子。
+4. R0 免 gate 明写；Gate 行覆盖 critic + reviewer；Loop Contract Exit 槽位同步 DONE-ungated。
+5. 人裁定的家三处不一致 → `docs/decisions.md`；长尾 watch / 冰箱 → `docs/watchlist.md`；
+   支线完成即删行；Now 覆盖前债务结转；外部事件 / 冻结步 / 前置探针有记号。
+6. 首轮锚点（无 project-review 文件、模型换代定义、板块必有）；Session Start 缺段回退到 bootstrap；
+   spec critic 与 R2 人批准的顺序；skeptic 定义；R1 critic 只做两条。
+7. 迁移：删除项目 CLAUDE.md 的反向规则（finance_tool「主模型 subagent 先确认」）、重跑 Tier 2 hooks；
+   瘦身给出判定顺序与人确认粒度。
+8. 减法：删 CLAUDE.md 的 backlog 重复行、change-loop 内联触发表、value-review Common mistakes 与论证
+   从句、dispatch 里给主循环的指令；WORKFLOW §5.8 指针收窄到 5.8.1–5.8.4。
+9. 陈述纠错：SessionStart hook 可见（本条目「harness 事实 2」已改）；存量脚本「全部纯 ASCII」为假（已改）；
+   「用户发起不重置锚点」是项目惯例非工具包规则（台账已注明）。
+
+拒绝的主要建议及理由：把 spec critic 改为 R1 可选（用户原话「每次都能自检出不少问题」，改为 R1 只做
+两条以控成本）；删 Outcome 三分类（它是写 Loop Contract 时的前瞻过滤，与回顾程序无关，只把箭头改为
+「不开工，记支线」）；把 8KB 阈值提到 12KB（zd-tool 试穿 48 行 4.6KB 证明小型项目余量充足，中型项目
+的长尾靠 watchlist 分流）。
+
+尺寸（定稿实测）：change-loop 8.5KB / dispatch 3.4KB / value-review 5.6KB / bootstrap 9.7KB（含两段
+内联 hook 源码）/ CLAUDE 2.0KB / backlog 1.7KB / GUIDE 8.8KB。change-loop 较 v5 的 6.2KB 增 2.3KB
+（路由第三行、spec critic 段、授权句、Close 五行），token ≈2.3k，仍为 v4 的一半。
+
+### Ablation 台账（本次切除 / 替换项）
+
+| 切除项 | 守护的失败模式 | 复发信号 | 回装方式 |
+|---|---|---|---|
+| 逐 change 三分类（value-review 主体） | 技术自嗨连击 | 主线映射为「推进」但用户可见产物无变化连续 3 个 | 在 route check 第 2 项加三分类列 |
+| 5 archive 计数触发 | 长期不回顾 | 4 周 backstop 到期前主线已偏且无人发现 | 恢复计数（只数主线 change） |
+| 「用户发起不重置锚点」惯例（new_review_create 项目先例，非工具包规则） | backstop 被人为回顾稀释 | 人发起的回顾之后 4 周内主线漂移 | 恢复惯例 |
+
+### GREEN 观察位（下个项目 / 首个瘦身项目回填）
+
+1. backlog 是否稳定 ≤8KB；Now 段是否真被覆盖而非追加、悬而未决是否结转
+2. route check 是否在主线边界自然发生；单份 ≤40 行是否守住
+3. spec critic 首轮 [blocking] 数（预期 >0，否则清单失效）
+4. 「无批准不许派 subagent」是否再现；Close 报告 `Gate:` 行出现率
+5. 软警告 hook 改 JSON / exit 2 后，模型是否真的对提醒有反应（首次 opsx:propose 无路由时观察）；
+   是否把 PostToolUse exit 2 误当 Write 失败而重试
+
 ## 2026-08-14 — v5 减法重构：RED 证据与 ablation 台账
 
 ### RED（改前证据；本次形态 = 使用投票 + 官方指导，非运行时失败）

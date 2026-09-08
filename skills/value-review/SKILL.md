@@ -1,41 +1,70 @@
 ---
 name: value-review
-description: Use when a long-running project shows drift — consecutive changes with no user-visible value, repeated R-revisions on the same decision, backlog priorities overturned, the main spec reads as confusing — or on cadence (every 5 archived changes or 4 weeks), or when the user asks for a mid-project review / 中期回顾.
+description: Use before routing the next change when any of these hold - a mainline milestone (a step whose 判据 is now observably met) or a 板块 was just archived; backlog.md Now shows 支线计数 ≥3; the newest retro commit is ≥4 weeks old; the session model is a newer generation than the one recorded in the last retro; or the user asks 回顾 / 中期回顾 / 我们还在主线上吗 / 这个工程还值得做吗. Two forms - route check (≤40 lines) and project review (≤120 lines). Not triggered by raw archive count.
 ---
 
-# Value Review
+# Value Review = 主线回顾
 
-对照 North Star 重新锚定项目、按累积现实重判架构与 backlog。产出是**交人决策的建议**
-——永不自动落地。
+回答一件事：**离 North Star 终态还有多远，我们还在通往它的主线上吗。** 不是给过去的
+change 打分。产出是交人决策的判决书，永不自动落地。
 
-> 本流程为压缩占位：触发表是权威，流程为最小可用版。「工程全面复盘」的深度重设计
-> 是 v5 落地后的第一个独立 change。
+## 两种回顾与触发（任一命中；检查点 = 下一个 change 路由前，change-loop §1）
 
-## Triggers（任一命中）
+| 形式 | 触发 | 产出 |
+|---|---|---|
+| **Route check 航线校准** | 主线里程碑 archive 后（该步所标判据可观察达成）；支线计数 ≥3（Now 下一步为「等 <外部事件>」期间暂停此条）；最近 retro commit ≥4 周（backstop：任何形式的 retro 都重置；命中而未写文件 = 未回顾，锚点不动）；人问「还在主线上吗」 | `retros/<date>-route-check.md`，≤40 行 |
+| **Project review 工程复盘** | 一个板块收官（包含并取代同次 route check）；最近 project-review ≥8 周（无则从最早 retro 或立项 commit 起算）；模型换代——家族名或主版本号变化（Opus 4.8 → 5 算，Fable 5 → 5.1 不算），对照上份 retro 末行记录；连续 2 次 route check 判「钻牛角尖」或位置未前进，且两次之间隔 ≥1 个主线尝试或 ≥2 周；人要求 | `retros/<date>-project-review.md`，≤120 行 |
 
-| 信号 | 阈值 |
-|---|---|
-| 自嗨连击 | 连续 3 个 archive 无可观察行为变化——事后判，不看 Outcome 声称什么 |
-| 决策翻烧饼 | 同一决策被 ≥2 次 R-revision，或 2 个 change 在同一 capability 上冲突 |
-| backlog 被推翻 | 上次回顾以来 phase 顺序或优先级重排 |
-| 节奏兜底 | `retros/`（OpenSpec 项目 `openspec/retros/`）最新文件起 ≥5 archive 或 ≥4 周——change-loop 收尾自动查，不靠记忆 |
-| 人的直觉 | 「看不懂主 spec」/ 对方向不安 |
+archive 总数不是触发条件。路径：OpenSpec 项目 `openspec/retros/`，其他 `docs/retros/`。
+节奏锚用命令得出，不信 handoff 里的数（按 commit 序，不按文件名日期）：
 
-## Procedure（压缩版）
+```bash
+retro=$(git log -1 --format=%H -- <retros>)         # 最近一份 retro 的 commit
+git log -1 --format=%cs -- <retros>                  # 其日期 → 4 周 / 8 周
+git log --diff-filter=A --format= --name-only "$retro"..HEAD -- <archive dir> | grep -c .
+# ↑ 其后新增归档数；减去主线段新增打勾数 = 支线计数（Now 里的数只是缓存）
+```
 
-1. **核销上轮承诺先行**。打开上一份 retro：每个承诺解锁 user-value 的 enabling change，
-   价值落了吗？未兑现的领衔 findings。首轮（retros 目录无文件）跳过本步。
-2. **North Star 检查**。读项目 CLAUDE.md 的 North Star 段。还成立吗？失真 → 停：
-   重锚定是人的决策，它定下来之前其余都不重要。
-3. **逐 change 一行分类**。对上次回顾以来每个 change：*用户得到了什么？*按 North Star
-   段的三分类判：user-value / enabling / self-indulgence。enabling 的标准不是「理论上
-   解锁」而是「承诺的价值落了没」——所以第 1 步先跑。
-4. **写了就停**。产出 `retros/<date>-value-review.md`（OpenSpec 项目放
-   `openspec/retros/`）：findings + 每条建议标 [keep] / [change] / [kill] / [decide]，
-   呈交人。批准后才走 R-revision / ARCHITECTURE 更新 / backlog 修改——批准前零落地。
+## Route check（六项）
 
-## Common mistakes
+1. **终态与判据**：从 CLAUDE.md North Star 段抄，不重写、不换说法。
+2. **主线快照**：M 步已完成 k；本期每个 archive → 推进第几步 / 前置 / 支线（为什么出现：
+   dry-run / 修复 / 评审衍生 / 回顾衍生）。「推进」按用户产物核验（已证明 ≠ 已交付）；
+   不成立 → 回退打勾 + 一条 [decide]。
+3. **待做审视**：只审在途提案 + 自上次 retro 起新增的支线 + 触发已命中的支线，逐条
+   在线 / 降级等触发 / kill；其余一句「n 条未触发，不动」。
+4. **偏离判决**：在线｜分叉｜钻牛角尖，先写一行量：自上次主线推进起 n 支线 / d 天。判据
+   （给 change-id）：同一细节 ≥2 个 change 且该细节不是主线步；主线某步估算较上份 route
+   check 推后；目标措辞从「用户得到 X」滑成「工具能做 Y」；支线连击——主线阻塞于外部事件时
+   不算，判「在线，阻塞于 <事件>」。
+5. **距离**：剩余步数 + 按已完成步骤的实际节奏一句估算（外部事件解锁的步注明不可估）。
+6. **下一步**：唯一一个动作。
 
-- **自动落地结论**：架构与价值方向是语义级决策——永远人 gate。
-- **数吞吐不看结果**：「archive 了 12 个 change」不是 finding；用户得到了什么才是。
-- **enabling 一律放行**：检验是「承诺的价值落了没」，不是「理论上有用」。
+末两行：上轮承诺核销（上一份 retro 提的那一个 change 与各 [decide] 落了吗）；
+`模型: <会话模型名>`（换代触发的基线）。
+
+## Project review（六项）
+
+1. **North Star 还成立吗**（用户是谁 / 得到什么 / anti-scope）——失真 → 停：重锚定是人的
+   决策，定下来之前其余都不重要。
+2. **成功判据逐条**：达成 / 部分 / 未达 + 可观察证据——取自生产路径与用户产物，不看
+   Outcome 声称什么。
+3. **轨迹**：每板块（无分组 = 整条主线一个板块）计划步数 vs 实际 change 数 vs 用时；
+   收敛还是发散。
+4. **死胡同**：哪一步反复尝试无进展（列 change 与 probe）；沉没成本提醒。
+5. **贬值检查**：当前模型 / 工具已能直接做到本项目哪些部分？哪些组件因此多余？剩余价值
+   是什么——长周期工程最贵的错误是继续建一个模型已经免费给出的东西。末行记 `模型:`。
+6. **建议**：[continue] / [re-scope] / [pause] / [kill] + 剩余主线重排提案。
+
+## 共同规则
+
+- **最多提 1 个新 change，且必须在主线上**；其余发现进 backlog 支线一行（带触发条件）。
+- **回顾只读**：用已有归档 / 读数 / 命令输出；需要新实验 → 那就是它提的那一个 change。
+- **[decide] ≤3 条，每条一个是非题或 A/B，写完停下等人当场拍**；未拍的结转 backlog Now
+  悬而未决，不带进下一轮 retro 重述。
+- 主线段增删 → [decide] 交人；批准后才动 backlog 主线 / North Star / ARCHITECTURE——
+  批准前零落地。
+- 判决书不是日志：证据用路径指，不粘贴；自己写错了就改正文，过程在 git。
+- 议题是产品与主线；工具包的流程问题进 toolkit 的 FIELD-LOG，不占回顾篇幅。
+- 首轮：backlog 无主线段 → 停，先跑 project-bootstrap 迁移写出主线段交人确认；
+  旧 `*-value-review.md` 视作上一份 retro。

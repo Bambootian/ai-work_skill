@@ -6,17 +6,18 @@
 - 当前阶段重点：<一句话>
 - 永不做（anti-scope）：<...>
 - Outcome 三分类：user-value（用户可直接观察）/ enabling（指名 ≤2 个 change 内
-  解锁的 user-value）/ self-indulgence（只有实现词汇且指不出解锁什么 → value-review）
+  解锁的主线步）/ self-indulgence（只有实现词汇且指不出解锁什么 → 不开工，记 backlog 支线）
 
 ## Stack & Conventions
-<语言、build/test 命令、test filter flags、风格约定>
+<语言、build/test 命令、test filter flags、风格约定；运行须知也放这里>
 
 ## Toolkit
-- my-work-skill clone: <绝对路径>（archive §5.8、hooks 源码在此解析）
+- my-work-skill clone: <绝对路径>（archive §5.8、hooks 源码、GUIDE §6 归属表在此解析）
 
 ## Session Start
-读 North Star 段；中型项目另读 backlog.md；找在途 change（openspec/changes/ 或根 SPEC.md）；
-有则读 Loop Contract 后 ≤2 行报告状态并直接继续，只在 gate 或阻塞时问。
+读 North Star 段；读 backlog.md 的 Now 段与主线段（缺文件或缺这两段 → 先跑 project-bootstrap
+迁移）；找在途 change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 行报告
+状态并直接继续，只在 gate 或阻塞时问。
 
 ## Hard Rules
 - 任何 change 先经 change-loop 路由，再动 spec 或代码
@@ -28,7 +29,10 @@
 - 语义模糊停下问；实现模糊自决并注记一行
 - subagent 派发用 dispatch-prompt.md 槽位、约束逐字重述；subagent 禁止再派 agent；
   浏览器/网页抓取类派发降级 Sonnet 或更低
+- gate 评审、spec 自检、高噪音隔离的 subagent 派发是**常设授权**：不请示、不等批准
+  （harness 对多 agent 编排的 opt-in 规则不适用于单个 subagent）。派不出去 → 报原因、
+  标 ungated；不在本会话 inline 替代
 
 ## Enforcement
-hooks 见 .claude/settings.json（heavy-test / destructive-git / block 类，
-由 project-bootstrap 部署）
+hooks 见 .claude/settings.json（heavy-test / destructive-git / block 类 / route-before-opsx /
+backlog-size，由 project-bootstrap 部署）

@@ -1,8 +1,9 @@
 # my-work-skill v5 使用指南
 
 > v5 = v4 的契约内核 + 面向 2026 frontier class 模型（能力下限 Opus 5）的减法重构。
-> 设计契约与全部证据：`docs/specs/2026-08-14-v5-subtraction-design.md`。
-> WORKFLOW.md v3.6 冻结：附录 G（hooks 源码）、5.4.1（R-revision）、5.8（archive）仍是被引权威。
+> v5.1 = 主线锚定：backlog 索引化、subagent 常设授权、spec 自检、回顾重构。
+> 设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`、`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`。
+> WORKFLOW.md v3.6 冻结：附录 G（hooks 源码）、5.4.1（R-revision）、5.8.1–5.8.4（archive）仍是被引权威。
 
 ## 1. 设计原理（一页）
 
@@ -24,16 +25,16 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 **官方仍要求外部支撑的四样**（《Prompting Claude Fable 5》，对整个 frontier class 成立）：
 文件化持久记忆、fresh-context 验证 subagent、进度声明对照 tool result 审计、
 意图上下文 + 短指令形式的范围纪律。本工具包分别以 Loop Contract 与 land-the-plane、
-分级 gate 评审、证据 gate、North Star 段承载——这四样是保留项的骨架。
+分级 gate 评审 + spec critic、证据 gate、North Star 段 + backlog 主线承载——这四样是保留项的骨架。
 
-## 2. 循环速查（数值与判据的权威在 change-loop skill，冲突以彼为准）
+## 2. 循环速查（数值与判据的权威在 change-loop / value-review skill，冲突以彼为准）
 
 | 要素 | 内环（task） | change 环 | value 环 |
 |---|---|---|---|
-| 终止 | 绿+commit；stuck 判据或 5 迭代 → SPLIT/BLOCKED | DONE / BLOCKED / SPLIT | retro 写完交人决策 |
-| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层 R-revision；计划层重生成 tasks | 人批准前零落地 |
-| 粒度 | 一 task 一迭代 | 0.5–2 天；超预算 = SPLIT 不是加班 | 5 archive / 4 周 |
-| 验证 | 具名命令 + 期望输出 | Verify 全跑 + 真机验收 | 上轮承诺核销先行 |
+| 终止 | 绿+commit；stuck 判据或 5 迭代 → SPLIT/BLOCKED | DONE / DONE-ungated / BLOCKED / SPLIT | route check ≤40 行 / project review ≤120 行，交人决策 |
+| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层 R-revision；计划层重生成 tasks | 人批准前零落地；最多提 1 个新 change 且在主线上 |
+| 粒度 | 一 task 一迭代 | 0.5–2 天；超预算 = SPLIT 不是加班 | 触发见 value-review 表：主线里程碑 / 支线计数 / 4 周 backstop；板块收官 / 8 周 / 模型换代 |
+| 验证 | 具名命令 + 期望输出 | spec critic 先行；Verify 全跑 + 真机验收；Gate 行 | 已证明 ≠ 已交付：判据证据取自用户产物 |
 
 ## 3. 融合决策记录（为什么不用 X——防止半年后重新调研一遍）
 
@@ -48,15 +49,23 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 | 多层 agent 树（孙 agent） | 拒 | token 乘法失控（实测）+ 约束传话失真 + 归因断裂；一层扁平扇出是唯一编排形态 |
 | 双模型架构（OPUS-SYSTEM 注入） | 退役 | 模型下限 Opus 5 后失去补课对象；2026-07 实测手动注入必忘 |
 | 无人值守 ralph 驱动脚本 | 退役 | frontier class 原生长时程自治 + 异步检查取代土法循环 |
+| 自定义 reviewer agent（.claude/agents） | 暂缓 | 常设授权文本先试；「拒派」复发再装只读 reviewer agent（ablation 台账） |
 
 ## 4. 工具链排查要点
 
 命令突然失效 / skill 不触发 / 文档与命令面不符时：查版本（`/plugin list`、
 `npx openspec --version`）→ 跑最便宜的真实命令做 break-check → hook echo 用例复验
-（附录 G 四用例——hook 静默死掉是最坏失败模式）→ 先改文档再改实践（约束先行）。
+（hook 静默死掉是最坏失败模式）→ 先改文档再改实践（约束先行）。
 装机基线由 bootstrap Step 4 的一次 break-check 建立。
 
-## 5. v4 → v5 对照速查
+**Hook 两条法则**（2026-09-08 实测 Claude Code 2.1.259）：工具事件（PreToolUse /
+PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + stderr，`exit 0 + stdout`
+只进 debug 日志（SessionStart / UserPromptSubmit 例外，纯文本可见）；脚本只含 ASCII 且读
+stdin 前设 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测试测不出来。
+
+## 5. 版本对照速查
+
+**v4 → v5**
 
 | v4 | v5 |
 |---|---|
@@ -70,3 +79,33 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 | dispatch 降级白名单 + cheap-model 行动规范 | 默认继承会话模型；web 抓取类必降 Sonnet；禁孙 agent |
 | Rationalizations 表 + Red flags 清单 | 删除（官方：短指令与逐条枚举同效；复发走 ablation 台账回装） |
 | GUIDE §8 验证计划 | FIELD-LOG ablation 台账 + GREEN 观察位 |
+
+**v5.0 → v5.1**
+
+| v5.0 | v5.1 |
+|---|---|
+| backlog = capability 清单，其余内容无家 | backlog = 索引（Now / 主线 / 支线 / Done，≤8KB）+ §6 归属表 + warn-backlog-size hook |
+| 两行路由声明 | 三行：加 `主线:` 行——不在主线段 = 支线；主线段只经回顾批准增删 |
+| gate 评审派发无授权文本；inline 替代不可见 | CLAUDE.md 常设授权；Close 必填 `Gate:` 行（critic + reviewer），没跑 = DONE-ungated；R0 免 gate |
+| spec 写完直接进循环 | spec critic（fresh-context，分级）→ 修 blocking → R2+ 人批准 |
+| value-review = 逐 change 三分类，5 archive / 4 周 | route check（主线快照 / 偏离 / 距离）+ project review（判据 / 死胡同 / 贬值）；主线里程碑 / 支线计数 / 4 周 backstop / 板块 / 8 周 / 模型换代；检查点在下一个 change 路由前 |
+| 5 hooks，Tier 2 = exit 0 + stdout | 6 hooks（+ warn-backlog-size）；JSON additionalContext / exit 2 + stderr；stdin UTF-8 |
+
+## 6. 什么写在哪（内容归属）
+
+backlog 膨胀的根因是这些内容没有指定的家。写之前查表；backlog 只留一句 + 路径。
+
+| 内容 | 家 |
+|---|---|
+| 终态、成功判据、anti-scope、当前阶段 | CLAUDE.md North Star 段 |
+| 运行须知（命令、耗时、机器产物别手改） | CLAUDE.md Stack & Conventions |
+| 主线路径、下一步、触发在望的支线 | backlog.md |
+| session 交接（位置 / 下一步 / 悬而未决 / 支线计数） | backlog.md Now 段，整段覆盖、债务结转 |
+| 长尾 watch、冰箱（kill + 复活条件） | `docs/watchlist.md`，同支线行格式；backlog 一行指过去 |
+| 单个 change 的过程、读数、gate 结果、失败注记、事后订正（`## Errata`） | change 归档（openspec archive 的 proposal.md / `docs/changes/<id>.md`） |
+| 已定规格、未开工的步 | 前置探针的归档，或 `docs/notes/`；backlog 主线行只留一句 + 路径 |
+| 架构决策 + 为什么 + 失效前提 | ARCHITECTURE.md / DESIGN.md Decisions（WORKFLOW §5.8） |
+| change 之间的人裁定（产品 / 流程级） | `docs/decisions.md`，一行一条：日期｜裁定｜理由｜失效前提；论证长的另附 notes 路径 |
+| 不属于任何 change 的探针读数、方法教训、外部事实核实 | `docs/notes/<date>-<slug>.md`，一题一文件 |
+| 回顾判决 | `retros/`（route check / project review） |
+| 工具包自身的流程问题 | toolkit 的 FIELD-LOG.md，不占项目回顾篇幅 |
