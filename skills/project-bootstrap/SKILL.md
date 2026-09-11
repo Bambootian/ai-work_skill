@@ -64,10 +64,11 @@ hook 的日后回补）。
 无 `<placeholder>` 存活——填不出 = Step 1 没做完，回去。
 
 **存量项目迁移**（幂等；AI 起草 → 人确认。有人在场：确认后落盘；无人值守会话：可先落盘并
-单独提交，backlog Now 悬而未决记一条「迁移 commit <hash> 待确认」，人不同意就 revert——迁移只改
-文档，git 兜底。判定以 harness 说明为准：系统提示说用户不在实时看 = 无人值守；拿不准按无人
-值守）。触发：Session Start 版本比对不等，或形态缺失。时机：只在绿树 task 边界做，单独一个 docs commit（`chore: migrate toolkit <旧> -> <新>`），
-不在红迭代里迁；在途 change 的 Loop Contract 与 tasks.md 不动，Close 按新 skill 补 `Gate:` /
+单独提交，backlog Now 悬而未决记一条「迁移 commit 待确认（主题 chore: migrate toolkit …）」——
+hash 写不进 commit 自身，不写 hash——人不同意就 revert——迁移只改文档，git 兜底。判定以 harness
+说明为准：系统提示说用户不在实时看 = 无人值守；拿不准按无人值守）。触发：Session Start 版本
+比对不等，或形态缺失。时机：只在绿树 task 边界做，单独的 docs commit（主题
+`chore: migrate toolkit <旧> -> <新>`，可多于一个），不在红迭代里迁；在途 change 的 Loop Contract 与 tasks.md 不动，Close 按新 skill 补 `Gate:` /
 `主线:` 行（兼容承诺见 GUIDE §5）。从项目 Toolkit 行的版本起，按下面各段顺序执行到当前版本
 （无 `版本:` 行 = v5.3 前立项，按形态推断起点：有 NORTH_STAR.md / PROTOCOL.md / warn-toolchain-stale
 → v4；backlog 无 Now / 主线段 → v5.0；hook 无 stdin UTF-8 行 → v5.1；config.yaml 无 operations 段
@@ -77,7 +78,9 @@ hook 的日后回补）。
 提到 backlog.md 的命令都响；② 引用清扫——grep 项目里对已删事物的引用（toolchain-refresh、
 NORTH_STAR.md、PROTOCOL.md、WORKFLOW.md、OPUS-SYSTEM）：CLAUDE.md / backlog / 注释直接改，
 living spec 里的记支线走 change-loop；③ 项目自有 hook 按写法法则体检（BOM / 中文 / OutputEncoding /
-可见性），不合规的记支线。
+可见性），不合规的记支线；settings.json 里既有 hook 的 matcher 一并核对——命令类必须
+`Bash|PowerShell`，旧部署只挂 `Bash` 的从来没看住 PowerShell 调用（finance_tool、new_review_create
+都是）。
 
 - v3/v4：NORTH_STAR.md 只保留终态 + 判据 + anti-scope 并入 CLAUDE.md North Star 段后删除
   该文件（Review Log 与历史注记进 git）；`openspec/` 与既有 hooks 保留；移除 `$PROFILE` 中的
@@ -91,6 +94,10 @@ living spec 里的记支线走 change-loop；③ 项目自有 hook 按写法法�
   任何 change 或文件的交接叙事才删（git 有）；③ 最新交接压成 Now 四字段；④ watch 压成支线一行，长尾进 `docs/watchlist.md`；
   done 条目压成 Done 段一行；⑤ 无主线段 → 从 North Star + 现有 roadmap 写出。人确认的
   对象 = 新 backlog 全文 + 新建文件清单（路径 + 一句），不逐行。搬，不删信息。
+  **搬迁用脚本，不手抄**（new_review_create 340KB 实测）：超 100KB 先量各段字节（归档区密度可达
+  入口区 3 倍，按行切块会撞 Read 上限），按字节切块读；建「源行号区间 → 目标文件」映射，断言
+  **每一源行恰好归属一次**（漏 = 丢信息，重 = 重复；off-by-one 就是它抓出来的）；先算完全部
+  区间再写文件，写坏一半的风险为零；Bash 里跑 Python 设 `PYTHONUTF8=1`，否则报错行是乱码。
 - 项目 CLAUDE.md 对照 `templates/CLAUDE.md` 补齐差异，并 grep 删除与 v5.1 冲突的旧规则：
   subagent「用户确认后再开」类条款、archive 计数触发、四行路由声明、toolchain-refresh 引用。
 - v5.1 → v5.2（OpenSpec 项目）：全局 CLI 先按 Step 0 升到最新；`openspec update` 会整体覆盖
@@ -122,10 +129,10 @@ echo 用例表）。复制到 `.claude/scripts/` + 注册进 `.claude/settings.j
 
 部署清单（6 个，`hooks/` 已按上述法则写成，原样复制）：
 
-- `block-unsafe-test-commands`（heavy-test）：走 hooks/README 的 Day-1 三问填三个占位符，
-  去掉 `-TEMPLATE` 后缀；「暂无重测试」是合法答案——落点 CLAUDE.md Stack & Conventions 一行
-  「无重型测试，未部署 heavy-test hook（<date>）」+ backlog 支线一行（触发：出现重型测试），
-  之后的 session 不重问。测试命令纪律同时写进 CLAUDE.md Stack & Conventions 与
+- `block-unsafe-test-commands`（heavy-test）：走 hooks/README 的 Day-1 四问填三个占位符，
+  去掉 `-TEMPLATE` 后缀；「暂无重测试」与「裸命令已由配置默认安全」都是合法答案——落点
+  CLAUDE.md Stack & Conventions 一行「无重型测试 / 裸命令已安全（原因），未部署 heavy-test hook
+  （<date>）」+ backlog 支线一行（触发：出现重型测试 / 出现绕过配置的跑法），之后的 session 不重问。测试命令纪律同时写进 CLAUDE.md Stack & Conventions 与
   `openspec/config.yaml` context。
 - `block-replaced-skills`、`block-superpowers-specs-dir`（Tier 1，PreToolUse）。
 - `warn-destructive-git`、`warn-route-before-opsx`（Tier 2，JSON additionalContext）；后者的

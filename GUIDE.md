@@ -163,5 +163,5 @@ backlog 膨胀的根因是这些内容没有指定的家。写之前查表；bac
 | 架构决策 + 为什么 + 失效前提 | capability 级：主 spec `## Architectural Decisions`（change-loop §5 Close，带 Source / Superseded）；项目级：ARCHITECTURE.md / DESIGN.md Decisions |
 | change 之间的人裁定（产品 / 流程级） | `docs/decisions.md`，一行一条：日期｜裁定｜理由｜失效前提；论证长的另附 notes 路径 |
 | 不属于任何 change 的探针读数、方法教训、外部事实核实 | `docs/notes/<date>-<slug>.md`，一题一文件 |
-| 回顾判决 | `retros/`（route check / project review） |
+| 回顾判决 | `openspec/retros/`（OpenSpec 项目）/ `docs/retros/`（其他）：route check / project review |
 | 工具包自身的流程问题 | toolkit 的 FIELD-LOG.md，不占项目回顾篇幅 |

@@ -3,6 +3,13 @@
 # containers, e2e browsers) in parallel and can freeze the machine. This hook
 # blocks them across every change and session.
 #
+# PRECONDITION: the bare runner command must actually be dangerous here. If the
+# runner config already excludes heavy tests by default (pytest addopts
+# -m 'not e2e', default markers, runner exclusions), do NOT deploy this file:
+# the dangerous command is then the opt-in flag, the opposite polarity, and
+# a marker flag inside SAFE_FILTER would let it through. See hooks/README
+# Day-1 question 2.
+#
 # PROJECT CUSTOMIZATION - exactly three placeholders, each recurring in the
 # comments, the code and the block message. Replace ALL occurrences, save the
 # file without the -TEMPLATE suffix, then `grep -E '<[A-Z_]+>'` must be empty.

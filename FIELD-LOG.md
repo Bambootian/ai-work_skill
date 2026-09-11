@@ -7,6 +7,30 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-11 — new_review_create 迁移回灌（v5.5 补丁；340KB backlog、45 归档）
+
+new_review_create（v4 立项，OpenSpec）按 v5.5 完成迁移（3 commits，未 push，主线段与 Now 待人
+逐行确认）。回报 6 条真踩 + 6 条替人拍的判断 + 4 条既有状态 + 4 条建议。处置：
+
+| # | 观察 | 处置 |
+|---|---|---|
+| 1 | 含中文字面量的 echo 测试脚本无 BOM → PS 5.1 按 GBK 读，引号被吞，整脚本解析失败 | README：测试脚本含中文必须带 BOM，或脚本 ASCII + 夹具按字节写 |
+| 2 | 工具命令里内联 `Remove-Item -Recurse -Force` 被 harness 静态拦截 | README：清理放 .ps1 里或留给系统 |
+| 3 | warn-backlog-size 的 Bash 用例载荷要带 `cwd`；README 措辞让人以为是进程工作目录，第一版得 0 差点误判失效 | README 用例表改写，给出载荷形状 |
+| 4 | 340KB backlog 读不下：Read 单次 25K token，归档区密度 3 倍，按行切块撞上限 | 瘦身段：超 100KB 先量字节再按字节切块 |
+| 5 | Bash 里 Python 打印中文要 `PYTHONUTF8=1` | README + 瘦身段 |
+| 6 | 行号映射 off-by-one 被「每行恰好归属一次」断言抓住 | 瘦身段：脚本搬迁配方（映射 + 断言 + 先算后写） |
+| 判 1 | **heavy-test 模板极性缺口**：`addopts = -m 'not e2e'` 已让裸跑安全，模板「裸跑即拦、`-m` 即放」会拦日常命令、放行 `-m e2e` | Day-1 三问改四问，第 2 问「裸命令是否已由配置默认安全」，是则不装；模板头注加 PRECONDITION；Step 3 落点措辞同步 |
+| 判 6 | 「迁移 commit <hash> 待确认」写不进自身，多一个 pin commit；skill 说一个实际 2+1 | 迁移段：不写 hash 写主题；docs commit 可多于一个 |
+| 既有 1 | 旧 settings.json 的 warn-destructive-git 只挂 `Bash`，PowerShell 调用从未被看住（finance_tool 同） | 迁移通用动作 ③ 加 settings.json matcher 核对 |
+| 既有 2 / 3 / 4 | CLAUDE.md 声称的 $PROFILE wrapper 不存在；项目级 v4 skill 副本两处被扫描；CRLF/LF 混用 | 引用清扫 / Step 0 删副本已覆盖；行尾无害 |
+| 建议 4 | GUIDE §6 写 `retros/`，value-review 写 `openspec/retros/` | §6 行改为与 value-review 一致 |
+
+判 2–5（主线板块推断、叙事只留 git、会话块归档归属、Watch-Item Lifecycle 段保留）是项目决策，
+待用户在 new_review_create 逐项确认，不进工具包。正面确认：bypass 模式下 hooks 照常触发；
+`openspec update` 非交互干净；先瘦身再挂 hook 的顺序对，瘦身窗口内 PostToolUse 一次没响。
+无接口变化，不升版本。
+
 ## 2026-09-11 — finance_tool 迁移回灌（v5.5 补丁；首个 OpenSpec 项目）
 
 finance_tool（v5.0 立项，OpenSpec，12 归档）按 v5.5 完成迁移，无人值守走「先提交后确认」。

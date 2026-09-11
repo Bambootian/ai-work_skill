@@ -64,14 +64,19 @@ PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
 默认并发 → 机器冻结（2026-06-01 实证：一个 subagent 在自审里裸跑 `dotnet test`，RAM 90%+）。
 跨栈普遍：`dotnet test` / `pytest` / `npm test` / `go test ./...` / `cargo test`。
 
-**Day-1 三问**（bootstrap Step 3 问；答案可日后回补）：
+**Day-1 四问**（bootstrap Step 3 问；答案可日后回补）：
 
 1. 有没有重型测试（单测 RAM > 200MB / 起外部依赖 / e2e）？没有 → 跳过本节。
-2. 测试代码能改吗？能 → 优先测试框架 marker / trait / build tag（结构性，默认就不跑）；
+2. **裸命令是否已由 runner 配置默认安全**（`addopts = -m 'not e2e'`、默认排除、marker 默认不跑）？
+   是 → **本模板不适用**：它假定「裸跑危险、加 filter 安全」，此时极性反了——危险的是
+   `-m e2e` 这类 opt-in 标志，而 `-m` 又在 SAFE_FILTER 里会被放行。不装模板，纪律写 CLAUDE.md
+   Stack 一行 + backlog 支线一行（触发：出现绕过配置的跑法）；真要硬拦就写项目专用 hook 拦
+   opt-in 标志。（new_review_create 实测，2026-09-11）
+3. 测试代码能改吗？能 → 优先测试框架 marker / trait / build tag（结构性，默认就不跑）；
    老测试不能改 → runner 配置默认排除；完全不能改 → 只靠 hook。
-3. 会派 subagent 跑测试吗？会 → **必须叠加 hook**（subagent 的文本约束被实证不可靠）。
+4. 会派 subagent 跑测试吗？会 → **必须叠加 hook**（subagent 的文本约束被实证不可靠）。
 
-本工作流 apply 阶段大量派 subagent，绝大多数项目最终都需要 hook（可叠加 marker 做深度防御）。
+本工作流 apply 阶段大量派 subagent，裸命令不安全的项目最终都需要 hook（可叠加 marker 做深度防御）。
 
 **填空**：`<TEST_CMD_REGEX>`（非捕获组）、`<SAFE_FILTER_REGEX>`（只对 runner 名之后的尾串匹配，
 原因见脚本头注「runner-name split」）、`<ESCAPE_VAR>`（项目特异名）。三个 token 在头注、代码、
@@ -103,6 +108,12 @@ $p = Start-Process -FilePath cmd -ArgumentList '/c', "chcp 936 >nul & powershell
 `cmd /c "chcp 65001 >nul"`，Git Bash（含 `!` 前缀）里要写 `cmd //c`，否则 `/c` 被改写成 `C:/`
 根本没跑。
 
+测试脚本本身的三条（new_review_create 实测）：驱动脚本若含中文字面量（载荷、路径）必须存成
+**带 BOM 的 UTF-8**——PS 5.1 把无 BOM 文件按 GBK 读，一个引号被吞整个脚本解析失败，Write 工具
+写出的是无 BOM，要再补；或者脚本保持 ASCII、夹具用 `[IO.File]::WriteAllBytes` 按 UTF-8 字节写。
+`Remove-Item -Recurse -Force` 内联在工具命令里会被 harness 静态拦截，放进 .ps1 里执行或留给
+系统清理。Bash 里跑 Python 打印中文要 `PYTHONUTF8=1`。
+
 | hook | 输入 | 期望 |
 |---|---|---|
 | block-replaced-skills | `{"tool_input":{"skill":"superpowers:writing-plans"}}` | stderr BLOCKED，exit 2 |
@@ -115,7 +126,7 @@ $p = Start-Process -FilePath cmd -ArgumentList '/c', "chcp 936 >nul & powershell
 | | `{"tool_input":{"skill":"change-loop"}}` | 静默，exit 0 |
 | warn-backlog-size | 超 8KB 的 backlog.md（路径与内容含中文） | stderr，exit 2 |
 | | 小 backlog.md / 其他文件 | 静默，exit 0 |
-| | Bash 命令提到 backlog.md 且 cwd 下的超标 | exit 2 |
+| | 载荷带 `cwd` 字段、命令提到 backlog.md、该目录下的超标（`{"cwd":"<dir>","tool_input":{"command":"cat backlog.md"}}`；脚本读的是载荷的 cwd，不是进程工作目录） | exit 2 |
 | block-unsafe-test-commands | 裸 `<TEST_CMD>` | exit 2 |
 | | `<TEST_CMD> <SAFE_FILTER_EXAMPLE>` | exit 0 |
 | | `<ESCAPE_VAR>=1 <TEST_CMD>` 与 `$env:<ESCAPE_VAR>=1; <TEST_CMD>` | exit 0 |
