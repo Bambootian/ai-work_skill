@@ -1,10 +1,66 @@
 # Field Log（实测日志，append-only）
 
-> 工具包自身的 RED/GREEN 证据链，接棒 WORKFLOW.md 附录 H（已冻结）的版本备注职能。
+> 工具包自身的 RED/GREEN 证据链，接棒 WORKFLOW.md 附录 H 的版本备注职能（WORKFLOW.md 已于 v5.2
+> 退役，原文见 tag v5.1）。
 > 记录纪律（README 修改约定的落地点）：改 skill 正文之前，证据先记入本文件（RED——
 > 运行时失败、使用投票、官方指导均为合法形态）；改完补齐修复对照与验证证据，
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
+
+## 2026-09-11 — v5.2 WORKFLOW.md 退役：hooks/ 落地、archive 交回 OpenSpec、opsx 约定下沉 config.yaml
+
+### RED（改前证据；形态 = 官方文档核实 + 存量项目实测，非运行时失败）
+
+- 用户判断：WORKFLOW.md v3.6 的流程已全部抽象进 skill 并迭代多轮，留着无意义（8 月 9 日条目
+  「第 6 部分是否保留属产品决策」至此裁定）。核实活依赖（skills / templates / GUIDE / README）
+  只剩三块：附录 G hook 源码（bootstrap Step 3，唯一无家的内容）、§5.8.1–5.8.4 archive
+  （change-loop Close）、§5.4.1 R-revision（change-loop 正文本就没有，只剩 GUIDE §2 一个名字）。
+- OpenSpec 1.5.0（上次对齐，2026-06-28）→ 1.13.0（2026-09-09，8 个 minor）核实（npm registry +
+  docs/*.md + CHANGELOG 一手）：① `openspec archive` 自动合并 ADDED/MODIFIED/REMOVED/RENAMED、
+  首次归档自动建主 spec、delta 的 `## Purpose` 被采用（1.7）、`retire_capabilities`（1.8）——
+  §5.8.2/5.8.3 手工 seed / merge 过时，只剩工具包自己的 `## Architectural Decisions` 约定是活的
+  （finance_tool 5 + new_review_create 14 个主 spec 全有此段）；② `/opsx:update`（1.6）覆盖
+  R-revision「停 apply → 改 spec → validate → 继续」；③ 1.8 起 normal 模式不强制英文 SHALL/MUST、
+  1.11 起 strict 对 Purpose 占位报失败——§5.8.4 的 `--strict` 会误伤；④ `openspec/config.yaml` 的
+  context / rules.<artifact> / operations.apply|archive.guidance（1.7）是官方项目级注入机制，经
+  `openspec instructions` 进每个 opsx skill 的 prompt——两个存量项目的 config.yaml 都只有
+  `schema:` 一行，从未用过；⑤ 两个存量项目都缺 `/opsx:update`（生成于 1.5.0 / 1.11.0），需
+  `openspec update`。
+- 用户裁定：约定下沉 config.yaml（只放 opsx 流程内才用到的条目，权威仍在 change-loop）；R1 改用
+  自定义 schema 记支线不做；validate 改 normal。
+
+### 修复（v5.2）
+
+| 项 | 处置 |
+|---|---|
+| 附录 G | `hooks/`：6 个真实 .ps1（4 个自附录 G + bootstrap 内联的 2 个迁出）+ README（原则 / 清单 / settings.json 片段 / heavy-test Day-1 三问 / echo 用例表）。全部按 v5.1 写法法则写成：ASCII、stdin UTF-8、坏 JSON exit 1、Tier 2 用 JSON additionalContext——Tier 1 三个旧脚本原先没设 stdin 编码，中文载荷会解析失败静默放行，此次一并修 |
+| §5.8 archive | change-loop §5 Close 自包含：`openspec archive <id> -y` → Decisions 追加（Source / Superseded）→ `validate --specs` + `list`，不加 `--strict`；§5.6/§5.7 改为具名 `/opsx:verify` / code-simplifier |
+| §5.4.1 | GUIDE §2 回退项改 `/opsx:update` |
+| 第 1 / 第 3 部分 | bootstrap Step 0 内联 superpowers 安装三条命令；Step 2 内联 ARCHITECTURE.md 一句 |
+| config.yaml | 新模板 `templates/openspec-config.yaml`：context（Stack 同步 + SHALL/MUST 保留 + 测试命令纪律）/ rules.tasks（Loop Contract 头部、task 带验证）/ rules.specs（Purpose）/ operations.apply（一 task 一迭代、超范围 SPLIT）/ operations.archive（-y、Decisions、validate、Errata）；bootstrap Step 2 生成，迁移段加 `openspec update` + 补 config + 重部署全部 hook |
+| 指针 | templates/CLAUDE.md Toolkit 行、GUIDE 头注 / §5 v5.1→v5.2 表 / §6 Decisions 行、README 目录树 / 修改约定 / 版本表 |
+| WORKFLOW.md | `git rm`；原文永在 tag v4.1 / v5.0 / v5.1；docs/specs、docs/plans、本文件历史条目的引用不改（指向 tag 中的文件） |
+
+### 验证（2026-09-11）
+
+- hooks/ 6 个脚本 echo 用例 32/32 通过（Windows PowerShell 5.1，`cmd /c "chcp 936 >nul & powershell
+  -NoProfile -File x.ps1 < in.json"`，in.json 无 BOM UTF-8 含中文；heavy-test 模板按 zd-tool pytest
+  参数填充，含 `python -m pytest` 陷阱用例）：Tier 1 block exit 2、放行 exit 0；Tier 2 命中输出一行
+  JSON additionalContext、未命中静默；warn-backlog-size 中文路径超标 exit 2；所有脚本坏 JSON exit 1。
+  驱动脚本在 scratchpad，不入库。
+- 活文件 grep：skills / templates / GUIDE / README / hooks 无 WORKFLOW / 附录 G / R-revision 引用
+  （bootstrap 迁移段「删项目内 WORKFLOW.md 副本」是 v3/v4 迁移动作，保留）。
+
+### 支线与 GREEN 观察位（下个 OpenSpec 项目 change 回填）
+
+- **支线：R1 改用 OpenSpec 自定义 schema**（`openspec schema init lite --artifacts "specs,tasks"`，
+  `openspec new change x --schema lite`）取代非标 `spec-lite.md`——收益：R1 进 status / archive /
+  主 spec 合并；陷阱：schema 无 id 为 `specs` 的 artifact 则永不合并主 spec。触发：下一个 R1
+  change 路由时评估，先在一个项目试跑。
+- 观察位：① 下一个 R2 归档，`/opsx:archive` skill 是否按 config.yaml archive guidance 维护
+  Decisions 段且不加 `--strict`；② 下一个 propose，tasks.md 头部是否出现 Loop Contract
+  （rules.tasks 注入是否生效）；③ 存量项目 `openspec update` 后 `/opsx:update` 是否可用，旧 change
+  是否因 1.8+ 校验变严（MODIFIED 漏 scenario、子任务计入进度）而 validate 失败。
 
 ## 2026-09-11 — value-review 补强三条 + 四个自检观察位（用户裁定）
 

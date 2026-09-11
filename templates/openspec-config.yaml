@@ -1,0 +1,31 @@
+# openspec/config.yaml — project-bootstrap Step 2 从本模板起草，context 由 CLAUDE.md
+# Stack & Conventions 回填。只放 opsx 工作流（propose / apply / archive）内才用到的约定；
+# 循环机制的权威在 change-loop skill，这里是给 OpenSpec 生成的 skill 的复述，不另立判据。
+# 字段语义（OpenSpec ≥ 1.7）：context 注入所有 artifact（≤ 50KB）；rules.<artifact> 只注入
+# 对应 artifact；operations.apply|archive.guidance 是建议性条目，由 `openspec instructions
+# apply|archive` 交给 agent。
+schema: spec-driven
+
+context: |
+  <语言、build/test 命令、test filter flags、风格约定；与 CLAUDE.md Stack & Conventions 同步>
+  Spec 语言：中文；Requirement 正文保留英文 SHALL / MUST 关键字（validate 依赖）。
+  测试命令纪律：<裸跑 <TEST_CMD> 被 hook 拦截；用 <SAFE_FILTER_EXAMPLE>；全量需 <ESCAPE_VAR>=1，只有人批准后主循环可设，subagent 不许设>
+
+rules:
+  tasks:
+    - 文件头部先写 change-loop 的 `## Loop Contract`（Outcome / Verify / Budget / Exit），再列 task
+    - 每个 task 一行写明验证命令与期望输出；「测试通过」四个字无效
+  specs:
+    - 新 capability 的 delta 顶部写 `## Purpose`（2–3 句存在价值；archive 会采用为主 spec 的 Purpose）
+
+operations:
+  apply:
+    guidance:
+      - 每迭代恰好一个 task，绿进绿出，逐 task commit；task 之间不请示只报进度
+      - 超出 spec 范围的工作停下报告（change-loop SPLIT），不静默缩减或简化
+  archive:
+    guidance:
+      - 用 `openspec archive <change-id> -y`（CLI 自动把 delta 合入主 spec，首次归档自动建主 spec）
+      - 主 spec `## Architectural Decisions` 段：追加本 change 的决策，每条带 *Source: change `<id>` (archived <date>)*；被推翻的旧决策不删，改写为 *Superseded by <new>, see change `<new-id>`*
+      - 归档后 `openspec validate --specs` 0 失败、`openspec list` 无 active change；不加 `--strict`（中文 spec 与 Purpose 占位会误伤）
+      - Close 的 Verify 输出、Gate 行、读数留在归档的 proposal.md；事后订正追加 `## Errata`

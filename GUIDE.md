@@ -3,7 +3,8 @@
 > v5 = v4 的契约内核 + 面向 2026 frontier class 模型（能力下限 Opus 5）的减法重构。
 > v5.1 = 主线锚定：backlog 索引化、subagent 常设授权、spec 自检、回顾重构。
 > 设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`、`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`。
-> WORKFLOW.md v3.6 冻结：附录 G（hooks 源码）、5.4.1（R-revision）、5.8.1–5.8.4（archive）仍是被引权威。
+> v5.2 = WORKFLOW.md v3.6 退役（原文见 tag v5.1）：hook 源码在 `hooks/`，archive 步骤在 change-loop §5，
+> spec 修订用 `/opsx:update`，opsx 流程内约定在 `templates/openspec-config.yaml`；对齐 OpenSpec 1.13。
 
 ## 1. 设计原理（一页）
 
@@ -32,7 +33,7 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 | 要素 | 内环（task） | change 环 | value 环 |
 |---|---|---|---|
 | 终止 | 绿+commit；stuck 判据或 5 迭代 → SPLIT/BLOCKED | DONE / DONE-ungated / BLOCKED / SPLIT | route check ≤40 行 / project review ≤120 行，交人决策 |
-| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层 R-revision；计划层重生成 tasks | 人批准前零落地；最多提 1 个新 change 且在主线上 |
+| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层 `/opsx:update`（不静默改 spec，代码同 commit 跟上）；计划层重生成 tasks | 人批准前零落地；最多提 1 个新 change 且在主线上 |
 | 粒度 | 一 task 一迭代 | 0.5–2 天；超预算 = SPLIT 不是加班 | 触发见 value-review 表：主线里程碑 / 支线计数 / 4 周 backstop；板块收官 / 8 周 / 模型换代 |
 | 验证 | 具名命令 + 期望输出 | spec critic 先行；Verify 全跑 + 真机验收；Gate 行 | 已证明 ≠ 已交付：判据证据取自用户产物 |
 
@@ -91,6 +92,15 @@ stdin 前设 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测�
 | value-review = 逐 change 三分类，5 archive / 4 周 | route check（主线快照 / 偏离 / 距离）+ project review（判据 / 死胡同 / 贬值）；主线里程碑 / 支线计数 / 4 周 backstop / 板块 / 8 周 / 模型换代；检查点在下一个 change 路由前 |
 | 5 hooks，Tier 2 = exit 0 + stdout | 6 hooks（+ warn-backlog-size）；JSON additionalContext / exit 2 + stderr；stdin UTF-8 |
 
+**v5.1 → v5.2**
+
+| v5.1 | v5.2 |
+|---|---|
+| WORKFLOW.md v3.6 冻结，附录 G / §5.8 / §5.4.1 被引 | 退役（原文见 tag v5.1）：hook 源码 → `hooks/`（真实 .ps1 + echo 用例，Tier 1 也补 stdin UTF-8）；archive → change-loop §5 三行，delta 合并交回 `openspec archive -y`；R-revision → `/opsx:update` |
+| opsx 流程内约定靠模型记住 change-loop | `templates/openspec-config.yaml`：context / rules.tasks / rules.specs / operations.apply\|archive.guidance，bootstrap 生成、OpenSpec 注入；权威仍在 change-loop |
+| `openspec validate --specs --strict` | 不加 `--strict`（1.8 起 normal 不强制英文 SHALL/MUST；1.11 起 strict 对 Purpose 占位报失败） |
+| 对齐 OpenSpec 1.5.0 | 对齐 1.13.0（core：propose / explore / apply / update / sync / archive）；存量项目 `openspec update` |
+
 ## 6. 什么写在哪（内容归属）
 
 backlog 膨胀的根因是这些内容没有指定的家。写之前查表；backlog 只留一句 + 路径。
@@ -104,7 +114,7 @@ backlog 膨胀的根因是这些内容没有指定的家。写之前查表；bac
 | 长尾 watch、冰箱（kill + 复活条件） | `docs/watchlist.md`，同支线行格式；backlog 一行指过去 |
 | 单个 change 的过程、读数、gate 结果、失败注记、事后订正（`## Errata`） | change 归档（openspec archive 的 proposal.md / `docs/changes/<id>.md`） |
 | 已定规格、未开工的步 | 前置探针的归档，或 `docs/notes/`；backlog 主线行只留一句 + 路径 |
-| 架构决策 + 为什么 + 失效前提 | ARCHITECTURE.md / DESIGN.md Decisions（WORKFLOW §5.8） |
+| 架构决策 + 为什么 + 失效前提 | capability 级：主 spec `## Architectural Decisions`（change-loop §5 Close，带 Source / Superseded）；项目级：ARCHITECTURE.md / DESIGN.md Decisions |
 | change 之间的人裁定（产品 / 流程级） | `docs/decisions.md`，一行一条：日期｜裁定｜理由｜失效前提；论证长的另附 notes 路径 |
 | 不属于任何 change 的探针读数、方法教训、外部事实核实 | `docs/notes/<date>-<slug>.md`，一题一文件 |
 | 回顾判决 | `retros/`（route check / project review） |

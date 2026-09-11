@@ -12,7 +12,7 @@
 <语言、build/test 命令、test filter flags、风格约定；运行须知也放这里>
 
 ## Toolkit
-- my-work-skill clone: <绝对路径>（archive §5.8、hooks 源码、GUIDE §6 归属表在此解析）
+- my-work-skill clone: <绝对路径>（`hooks/` 源码、`templates/`、GUIDE §6 归属表在此解析）
 
 ## Session Start
 读 North Star 段；读 backlog.md 的 Now 段与主线段（缺文件或缺这两段 → 先跑 project-bootstrap

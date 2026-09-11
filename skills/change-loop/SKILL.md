@@ -101,11 +101,15 @@ R3 三视角（+ skeptic）+ 人。发现分诊：[blocking] = 违反 spec/契�
 - `Gate: critic 跑了（n）| 没跑（原因）；reviewer 跑了（n / 视角）| 没跑（原因）`——任一没跑，
   出口态只能写 **DONE-ungated**。
 - `主线: 推进第 N 步 | 第 N 步前置 | 支线（原因）`——与路由声明一致，改了要说明。
-- 出口态声明：DONE / DONE-ungated / BLOCKED / SPLIT；跳过或合并的环节（如 WORKFLOW §5.6
-  Verify / §5.7 Polish，皆为 judgment call）明说并给理由。
-- 按 WORKFLOW.md §5.8.1–5.8.4 archive（toolkit 路径见项目 CLAUDE.md Toolkit 行）；§5.8.5 的
-  backlog 更新以下一条为准。Close 内容与读数留在归档；对已归档 change 的订正追加到归档
-  文件（OpenSpec 归档目录：proposal.md）末尾 `## Errata`，不写 backlog。
+- 出口态声明：DONE / DONE-ungated / BLOCKED / SPLIT；跳过或合并的环节（如 `/opsx:verify`
+  工件核查、code-simplifier polish，皆为 judgment call）明说并给理由。
+- Archive。OpenSpec 项目：`openspec archive <change-id> -y`（delta 自动合入主 spec，首次归档
+  自动建主 spec）→ 主 spec `## Architectural Decisions` 追加本 change 决策，每条带
+  *Source: change `<id>` (archived <date>)*，被推翻的旧决策不删、改写为 *Superseded by <new>,
+  see change `<new-id>`* → `openspec validate --specs` 0 失败、`openspec list` 无 active change
+  （不加 `--strict`）。非 OpenSpec 项目：根 `SPEC.md` 移入 `docs/changes/<id>.md`。Close 内容
+  与读数留在归档；对已归档 change 的订正追加到归档文件（OpenSpec 归档目录：proposal.md）
+  末尾 `## Errata`，不写 backlog。
 - 更新 backlog.md：主线步出口态 DONE 才打勾（DONE-ungated 补跑 gate 后打勾；SPLIT 子 change
   全 DONE 打勾）；支线完成即删该行（归档与 git 有）。Now 覆盖前先读旧 Now——悬而未决只能
   核销或结转（欠的 gate 在此），不能消失；支线计数：主线推进或 route check 后清零，支线
