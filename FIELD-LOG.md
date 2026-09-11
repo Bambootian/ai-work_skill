@@ -231,6 +231,10 @@ zd-tool（v4.1 立项的小型项目）按 v5.5 完成迁移，回报 6 条 tool
   Decisions 段且不加 `--strict`；② 下一个 propose，tasks.md 头部是否出现 Loop Contract
   （rules.tasks 注入是否生效）；③ 存量项目 `openspec update` 后 `/opsx:update` 是否可用，旧 change
   是否因 1.8+ 校验变严（MODIFIED 漏 scenario、子任务计入进度）而 validate 失败。
+- 检测点（2026-09-11 晚补，用户问「AI 当时能感知吗」）：项目 session 不读本文件，检测器必须在它
+  加载的文本里——支线写进 change-loop §2 R1「评估位」，观察位 ①② 写进 §5 Close「观察位」，命中
+  即回报人并回填本条目；回报一次后由工具包侧删句。③ 已由 finance_tool / new_review_create 迁移
+  部分回答：`/opsx:update` 可用，`validate --specs` 未报错（1.13.0 重生成后）。
 
 ## 2026-09-11 — value-review 补强三条 + 四个自检观察位（用户裁定）
 

@@ -54,6 +54,10 @@ R1 SPEC-lite（Goal/Non-goals/Scenarios/Loop Contract 单文件）位置：OpenS
 `openspec/changes/<change-id>/spec-lite.md`；其他项目根目录 `SPEC.md`，收尾移入
 `docs/changes/`。根目录 `SPEC.md` 属于**一个 change**、不属于项目——项目常设设计文档叫
 `DESIGN.md`。
+**评估位（回报一次后本句由工具包侧删除）**：OpenSpec 项目首次路由到 R1 时，先花 ≤10 分钟试
+`openspec schema init lite --artifacts "specs,tasks"` 并用 `openspec new change <id> --schema lite`
+建本 change——status / validate / archive 能跑通就用它，跑不通照旧 spec-lite.md；两种结果都在路由
+声明后一行回报人，并追加到 toolkit FIELD-LOG 2026-09-11 v5.2 条目的支线（路径见 CLAUDE.md Toolkit 行）。
 
 **Spec 自检（成文后、进循环前）**：派 fresh-context spec critic（dispatch-prompt.md
 「Spec critic」变体）——R1 一个（只做清单第 2、5 条）/ R2 critic + 「假设对照代码」视角分开派 /
@@ -110,6 +114,11 @@ R3 三视角（+ skeptic）+ 人。发现分诊：[blocking] = 违反 spec/契�
   （不加 `--strict`）。非 OpenSpec 项目：根 `SPEC.md` 移入 `docs/changes/<id>.md`。Close 内容
   与读数留在归档；对已归档 change 的订正追加到归档文件（OpenSpec 归档目录：proposal.md，R1 为
   spec-lite.md）末尾 `## Errata`，不写 backlog。
+- **观察位（回报一次后本句由工具包侧删除）**：OpenSpec 项目首次按上一条归档时，Close 多报两行
+  ——`/opsx:archive` 的输出里是否**自行**出现了 config.yaml archive guidance 的动作（Decisions 段
+  带 Source、`-y`、validate 不带 `--strict`），还是你事后按上一条补的；tasks.md 头部的 Loop
+  Contract 是 propose 时自动出现的（rules.tasks 生效）还是你手写的。追加到 toolkit FIELD-LOG
+  2026-09-11 v5.2 条目的 GREEN 观察位（路径见 CLAUDE.md Toolkit 行）。
 - 更新 backlog.md：主线步出口态 DONE 才打勾（DONE-ungated 补跑 gate 后打勾；SPLIT 子 change
   全 DONE 打勾）；支线完成即删该行（归档与 git 有）。Now 覆盖前先读旧 Now——悬而未决只能
   核销或结转（欠的 gate 在此），不能消失；支线计数：主线推进或 route check 后清零，支线
