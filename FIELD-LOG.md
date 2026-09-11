@@ -7,6 +7,23 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-11 — zd-tool 迁移回灌（v5.5 补丁，无项目动作）
+
+zd-tool（v4.1 立项的小型项目）按 v5.5 完成迁移，回报 6 条 toolkit 项 + 2 条通用坑（后者由该会话
+自行入知识库）。逐条核实后处置：
+
+| # | 观察 | 处置 |
+|---|---|---|
+| 1 | **Tier 1 heavy-test hook 对字面量也拦**：commit message 里「bare pytest」命中 `\bpytest\b`，`git commit` 被硬拦。README 只记了 Tier 2 的同形误报，Tier 1 后果不同 | README「已知误报」补 Tier 1 条目 + 绕法（`git commit -F <file>` 或换措辞）；模板头注与提示语同样写明。不改正则：加「命令位置」判断会与 runner-name split、`python -m pytest`、`VAR=1 pytest` 前缀互相绊，静默失效的代价大于每项目一次的误报 |
+| 2 | `~/.claude/my-work-skill.toolkit-path` 带 UTF-8 BOM（PS 5.1 `>` 默认写 BOM，PS 读吞掉所以一直没事，bash / python 读到 `﻿`）。该会话已无 BOM 重写；本机核实两个标记文件现均无 BOM | bootstrap Step 0 写明两个标记文件无 BOM 写入（`[IO.File]::WriteAllText` + UTF8Encoding($false)），已有带 BOM 的同法重写 |
+| 3 | 瘦身步骤②「剩余交接叙事删（git 有）」用户不接受：要求逐 change 的开工前记录 / 收工摘要补进各归档；分两次 commit 才到位 | 步骤①加「逐 change 记录整段追加到该 change 归档末尾（`## Migrated notes`）」，②改为「挂不到任何 change 或文件的才删」 |
+| 4 | heavy-test 模板占位符不止三个：提示语与头注里还有 `<TEST_CMD>` `<SAFE_FILTER_EXAMPLE>` `<SAFE_FILTER>`（本机核实：6 种 token） | 模板改为**恰好三个** token（提示语指向 CLAUDE.md Stack 段的 filter 示例，头注改普通措辞）；README 填空段加「填完 `grep -E '<[A-Z_]+>'` 为空」 |
+| 5 | 正面：settings.json 新加 PostToolUse 同 session 立即生效，不用重启 | README 写明，「挂载后真跑一次」可当场做 |
+| 6 | echo 配方把 `2>&1` 放进 cmd 字符串内部，stderr 与 exit 一次拿到 | README 配方加 `2>&1` |
+
+验证：模板改后 Python 驱动 32/32 重跑通过；用 zd-tool 参数填充后 `grep -E '<[A-Z_]+>'` 为空。
+无接口变化、无项目动作，不升版本号。
+
 ## 2026-09-11 — v5.5 用户裁定：无人值守迁移先提交后确认（B1）；观察位 #7 升级为规则（B2）
 
 - **B1**：bootstrap 迁移段改为「有人在场确认后落盘；无人值守可先落盘并单独提交，backlog Now

@@ -74,7 +74,8 @@ PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
 本工作流 apply 阶段大量派 subagent，绝大多数项目最终都需要 hook（可叠加 marker 做深度防御）。
 
 **填空**：`<TEST_CMD_REGEX>`（非捕获组）、`<SAFE_FILTER_REGEX>`（只对 runner 名之后的尾串匹配，
-原因见脚本头注「runner-name split」）、`<ESCAPE_VAR>`（项目特异名）。填充示例：
+原因见脚本头注「runner-name split」）、`<ESCAPE_VAR>`（项目特异名）。三个 token 在头注、代码、
+提示语里各出现多次，全部替换；填完 `grep -E '<[A-Z_]+>'` 必须为空。填充示例：
 
 | 栈 | TEST_CMD_REGEX | SAFE_FILTER_REGEX | ESCAPE_VAR |
 |---|---|---|---|
@@ -91,8 +92,8 @@ PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
 ```powershell
 $cp = (cmd /c chcp) -replace '\D', ''                      # 先记原始代码页——在本会话任何 chcp 之前
 try {
-  cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 < in.json"
-  "exit=$LASTEXITCODE"
+  cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 < in.json 2>&1"
+  "exit=$LASTEXITCODE"                                     # 2>&1 写在 cmd 字符串内：stderr 与 exit 一次拿到
 } finally { cmd /c "chcp $cp >nul" }                       # 恢复；中途出错也恢复
 ```
 
@@ -124,9 +125,14 @@ try {
 | 所有 hook | 坏 JSON | stderr，exit 1 |
 
 hook 挂载后在会话里真跑一次被拦的命令确认 matcher 生效：echo 只证明脚本对，不证明挂对了 tool。
-warn-backlog-size 的真跑：备份 backlog.md 到 scratchpad → 用 Write 追加 9KB 中文 → 应出现
-PostToolUse 提醒 → 从备份恢复并 cmp 一致。已知误报：warn-destructive-git 对命令文本里的字面量
-（写 fixture、生成文档）也响，Tier 2 无害，不改。
+settings.json 的改动当场生效，不用重启（zd-tool 实测：PostToolUse 挂上后下一次调用就响），
+所以这一步可以立刻做。warn-backlog-size 的真跑：备份 backlog.md 到 scratchpad → 用 Write 追加
+9KB 中文 → 应出现 PostToolUse 提醒 → 从备份恢复并 cmp 一致。
+
+**已知误报**（命令文本里的字面量也命中）：warn-destructive-git 对写 fixture / 生成文档里的
+`git reset --hard` 字样响，Tier 2 无害，不改；**block-unsafe-test-commands 是 Tier 1，同形误报会
+真的挡住一次操作**——zd-tool 实测 commit message 里写了「bare pytest」，`\bpytest\b` 命中，
+`git commit` 被硬拦。绕法：消息写文件后 `git commit -F <file>`，或换措辞。提示语里已写明。
 
 ## 不做 hook 的约束
 

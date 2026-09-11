@@ -13,7 +13,10 @@ hook 的日后回补）。
 
 1. toolkit 路径：读 `~/.claude/my-work-skill.toolkit-path`；没有 → 问人 clone 在哪
    （或现场 clone），把路径写入该文件——之后所有引用（`hooks/`、`templates/`、GUIDE §6、
-   本 skill 更新）由它解析。
+   本 skill 更新）由它解析。**这个文件和下面的版本标记文件都要无 BOM 写入**（PowerShell 5.1
+   的 `>` / `Out-File` 默认带 BOM，PowerShell 自己读会吞掉，bash / python 读到的是 `﻿`
+   开头的路径，比对和拼路径都失败）：`[IO.File]::WriteAllText($p, $v, (New-Object
+   System.Text.UTF8Encoding $false))`；已有文件带 BOM → 同法重写。
 2. clone 干净则 `git -C <toolkit> pull`；复制 `skills/*` → `~/.claude/skills/`（覆盖——
    部署的是副本，不会自更新；项目级 `.claude/skills/` 有副本的项目同样覆盖）；**同时删除
    工具包已移除的 skill 目录（如 toolchain-refresh）**——覆盖复制不清理死副本，死 skill
@@ -69,8 +72,10 @@ hook 的日后回补）。
   warn-toolchain-stale 两个 hook，删 `.claude/last-toolchain-refresh`。
 - v5.0 → v5.1 **backlog 瘦身**（超 8KB 即做），按此顺序：① 每个历史段先按 GUIDE §6 归属表
   把读数 / 裁定 / 教训 / 协议抄本各抽成一条，搬到 `docs/notes/<date>-<slug>.md`、
-  `docs/decisions.md` 或对应 change 归档（backlog 留一句 + 路径）；② 剩余的交接叙事删
-  （git 有）；③ 最新交接压成 Now 四字段；④ watch 压成支线一行，长尾进 `docs/watchlist.md`；
+  `docs/decisions.md` 或对应 change 归档（backlog 留一句 + 路径）；**逐 change 的开工前记录与
+  收工摘要整段追加到该 change 归档末尾**（OpenSpec：proposal.md；其他：`docs/changes/<id>.md`；
+  段名 `## Migrated notes`），不是只抽结论——用户裁定（zd-tool 迁移，2026-09-11）；② 挂不到
+  任何 change 或文件的交接叙事才删（git 有）；③ 最新交接压成 Now 四字段；④ watch 压成支线一行，长尾进 `docs/watchlist.md`；
   done 条目压成 Done 段一行；⑤ 无主线段 → 从 North Star + 现有 roadmap 写出。人确认的
   对象 = 新 backlog 全文 + 新建文件清单（路径 + 一句），不逐行。搬，不删信息。
 - 项目 CLAUDE.md 对照 `templates/CLAUDE.md` 补齐差异，并 grep 删除与 v5.1 冲突的旧规则：

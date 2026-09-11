@@ -3,8 +3,9 @@
 # containers, e2e browsers) in parallel and can freeze the machine. This hook
 # blocks them across every change and session.
 #
-# PROJECT CUSTOMIZATION - fill three placeholders, then save the file without
-# the -TEMPLATE suffix:
+# PROJECT CUSTOMIZATION - exactly three placeholders, each recurring in the
+# comments, the code and the block message. Replace ALL occurrences, save the
+# file without the -TEMPLATE suffix, then `grep -E '<[A-Z_]+>'` must be empty.
 #   <TEST_CMD_REGEX>      regex matching the bare test command, e.g.
 #                           '\bdotnet\s+test\b'                (.NET)
 #                           '\bpytest\b'                        (Python)
@@ -34,13 +35,16 @@
 #   instead of the argument tail (verified 2026-08-09).
 #
 # Rules:
-#   <TEST_CMD> without <SAFE_FILTER> and without <ESCAPE_VAR>=1  -> block
-#   <TEST_CMD> with a scope flag                                 -> allow
-#   <ESCAPE_VAR>=1 <TEST_CMD>                                    -> allow
-#   any non-test command                                         -> allow
+#   runner without a scope flag and without <ESCAPE_VAR>=1  -> block
+#   runner with a scope flag                                 -> allow
+#   <ESCAPE_VAR>=1 before the runner                         -> allow
+#   any command not invoking the runner                      -> allow
 #   Subagents MUST NEVER set <ESCAPE_VAR>=1 on their own; only the human or
 #   main-loop Claude after explicit human authorisation. Restate this in
 #   every subagent dispatch (dispatch-prompt.md Constraints slot).
+#   Known false positive: the runner name inside literal text (a commit
+#   message, a heredoc, a report) is blocked too - write the text to a file
+#   and use `git commit -F`, or rephrase.
 #
 # Exit 2 = block; stderr is shown to the model. Bad stdin JSON = exit 1.
 [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
@@ -68,19 +72,16 @@ BLOCKED: bare test command is forbidden in this project.
 Reason: full-suite runs trigger heavy/integration tests that consume RAM,
 containers or external services concurrently and can crash the machine.
 
-Use one of these instead:
-
-  # scoped to specific tests - fast, safe:
-  <TEST_CMD> <SAFE_FILTER_EXAMPLE>
+Use a scoped run instead - the filter flag and examples are in CLAUDE.md
+Stack & Conventions (test command discipline).
 
 If you GENUINELY need a full run (verify phase, archive prep, after human
-authorisation), prefix the command:
-
-  <ESCAPE_VAR>=1 <TEST_CMD> ...
+authorisation), prefix the command with <ESCAPE_VAR>=1.
 
 Subagents MUST NOT set this variable. Only main-loop Claude may, after the
 human explicitly approved a full run for this specific moment.
 
-See: CLAUDE.md Stack & Conventions (test command discipline)
+If the runner name only appears inside literal text (commit message, heredoc,
+report), write the text to a file and use `git commit -F`, or rephrase.
 "@)
 exit 2
