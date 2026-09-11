@@ -26,7 +26,9 @@ hook 的日后回补）。
    设计，不是事故。**
 3. 前置：superpowers 插件在（brainstorming / systematic-debugging 是循环依赖）；缺 →
    `/plugin marketplace add obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace`
-   → `/plugin list` 确认 enabled。中型项目 `npx @fission-ai/openspec@latest --version` 可用（Node ≥ 20.19）。
+   → `/plugin list` 确认 enabled。中型项目：全局 OpenSpec CLI 跟上最新——`openspec --version` 与
+   `npx @fission-ai/openspec@latest --version` 不等则 `npm i -g @fission-ai/openspec@latest`
+   （Node ≥ 20.19）；生成文件由 CLI 重生成，全局落后会让日常命令与生成文件版本错位。
 
 机器已是最新（路径文件在、skills 与 toolkit 一致、无死目录、标记文件 = VERSION）→ 一行说明，继续。
 
@@ -80,8 +82,8 @@ hook 的日后回补）。
   对象 = 新 backlog 全文 + 新建文件清单（路径 + 一句），不逐行。搬，不删信息。
 - 项目 CLAUDE.md 对照 `templates/CLAUDE.md` 补齐差异，并 grep 删除与 v5.1 冲突的旧规则：
   subagent「用户确认后再开」类条款、archive 计数触发、四行路由声明、toolchain-refresh 引用。
-- v5.1 → v5.2（OpenSpec 项目）：`npx @fission-ai/openspec@latest update`（刷新生成的 skills /
-  commands，补 `/opsx:update` 等）；`openspec/config.yaml` 对照 `templates/openspec-config.yaml`
+- v5.1 → v5.2（OpenSpec 项目）：全局 CLI 先按 Step 0 升到最新，再 `openspec update`（刷新生成的
+  skills / commands，补 `/opsx:update` 等；不交互）；`openspec/config.yaml` 对照 `templates/openspec-config.yaml`
   补 context / rules / operations 段（`schema:` 行不动）；`.claude/scripts/` 对照 `hooks/` 重部署
   全部 hook（Tier 1 也改了 stdin UTF-8 + 坏 JSON exit 1；Tier 2 旧写法模型看不见）并重跑 echo 用例。
 - v5.2 → v5.3：只有 Toolkit 行补 `版本:`（由上面的收尾动作完成）。
@@ -125,8 +127,8 @@ PowerShell 里 `cmd /c "chcp 936 >nul & powershell -NoProfile -File x.ps1 < in.j
 
 ## Step 4 — 收尾
 
-1. 装机级 break-check 一次：`npx openspec --version` + 最便宜的真实命令（如
-   `npx openspec list`），确认命令面与工具包文档一致；不一致先改文档再依赖新行为。
+1. 装机级 break-check 一次：`openspec --version`（全局 CLI）+ 最便宜的真实命令（如
+   `openspec list`），确认命令面与工具包文档一致；不一致先改文档再依赖新行为。
    日后工具异常的排查要点见 GUIDE §4。
 2. Commit 文档与配置（英文 message，不 push）。
 3. 收尾声明：**bootstrap 到此为止——第一个 change 从 change-loop 的路由声明开始，
