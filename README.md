@@ -12,6 +12,7 @@ my-work-skill/
 ├── README.md                # 本文件：结构与修改约定
 ├── GUIDE.md                 # 使用指南：设计原理、循环速查、决策记录、排查要点、版本对照、内容归属表
 ├── FIELD-LOG.md             # 实测日志（append-only）：RED/GREEN 证据链 + ablation 台账
+├── LICENSE                  # MIT
 ├── docs/specs/              # 设计契约
 ├── docs/plans/              # 实现计划
 ├── skills/                  # 由 project-bootstrap 部署到 ~/.claude/skills/
@@ -36,3 +37,17 @@ my-work-skill/
 
 对项目说「立项」或「部署工作流」→ `project-bootstrap` 接管。
 冷启动（机器无任何 skill）：clone 本仓库 → 让 AI 读 `skills/project-bootstrap/SKILL.md` 照做。
+
+## 版本
+
+| tag | 日期 | 内容 |
+|---|---|---|
+| v5.1 | 2026-09-11 | 主线锚定：索引式 backlog、subagent 常设授权、spec critic、两层回顾 |
+| v5.0 | 2026-08-14 | 减法重构：契约内核、两行路由、面向 2026 frontier class 模型（下限 Opus 5） |
+| v4.1 | 2026-08-09 | v3 流程内核 + 四层工程模型；含首轮实测修正 |
+
+版本间差异见 `GUIDE.md` §5 版本对照速查。
+
+## License
+
+MIT，见 `LICENSE`。
