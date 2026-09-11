@@ -5,6 +5,7 @@
 > 设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`、`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`。
 > v5.2 = WORKFLOW.md v3.6 退役（原文见 tag v5.1）：hook 源码在 `hooks/`，archive 步骤在 change-loop §5，
 > spec 修订用 `/opsx:update`，opsx 流程内约定在 `templates/openspec-config.yaml`；对齐 OpenSpec 1.13。
+> v5.3 = 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ `~/.claude/my-work-skill.toolkit-version`，Session Start 比对；接口兼容承诺（§5）。
 
 ## 1. 设计原理（一页）
 
@@ -58,6 +59,8 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 `npx openspec --version`）→ 跑最便宜的真实命令做 break-check → hook echo 用例复验
 （hook 静默死掉是最坏失败模式）→ 先改文档再改实践（约束先行）。
 装机基线由 bootstrap Step 4 的一次 break-check 建立。
+项目行为像旧版（要求确认 subagent、看不见 hook 提醒、archive 手工合并）→ 先看项目 Toolkit 行
+版本与 `~/.claude/my-work-skill.toolkit-version` 是否相等，不等就是没迁移，不是 skill 坏了。
 
 **Hook 两条法则**（2026-09-08 实测 Claude Code 2.1.259）：工具事件（PreToolUse /
 PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + stderr，`exit 0 + stdout`
@@ -65,6 +68,20 @@ PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + std
 stdin 前设 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测试测不出来。
 
 ## 5. 版本对照速查
+
+**接口与兼容承诺**（机器级 skill 与项目文件之间的契约；minor 版本内只增不改不删，要改或删 =
+major + 迁移段。在途 change 跨 minor 版本安全的前提就是这张表：状态在文件里，字段只增；新 skill
+接旧契约，Close 补新增行）
+
+| 接口 | 内容 |
+|---|---|
+| CLAUDE.md 段名 | North Star / Stack & Conventions / Toolkit（含 `版本:` 行）/ Session Start / Hard Rules / Enforcement |
+| backlog.md 段名 | Now（四字段）/ 主线 / 支线 / Done |
+| Loop Contract | Outcome / Verify / Budget / Exit 四字段（v4.1 起未变） |
+| 路由与收尾 | Route / 主线 / Next 三行；Close 的 `Gate:` / `主线:` 行 |
+| hooks | `hooks/` 清单、脚本名、matcher |
+| openspec/config.yaml | schema / context / rules.<artifact> / operations.apply\|archive.guidance |
+| 版本戳 | `VERSION` = tag；项目 Toolkit 行 `版本:`；机器 `~/.claude/my-work-skill.toolkit-version` |
 
 **v4 → v5**
 
@@ -100,6 +117,14 @@ stdin 前设 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测�
 | opsx 流程内约定靠模型记住 change-loop | `templates/openspec-config.yaml`：context / rules.tasks / rules.specs / operations.apply\|archive.guidance，bootstrap 生成、OpenSpec 注入；权威仍在 change-loop |
 | `openspec validate --specs --strict` | 不加 `--strict`（1.8 起 normal 不强制英文 SHALL/MUST；1.11 起 strict 对 Purpose 占位报失败） |
 | 对齐 OpenSpec 1.5.0 | 对齐 1.13.0（core：propose / explore / apply / update / sync / archive）；存量项目 `openspec update` |
+
+**v5.2 → v5.3**
+
+| v5.2 | v5.3 |
+|---|---|
+| 项目与机器都无版本记录，漂移靠 Session Start 猜形态（只查 North Star / Now / 主线） | `VERSION` 文件；bootstrap 写项目 Toolkit 行 `版本:` 与机器标记文件；Session Start 先比对，不等即迁移，形态检查留作兜底 |
+| 迁移无时机规则 | 绿树 task 边界、单独 docs commit；在途契约不动；Toolkit 行改版本 = 迁移完成 |
+| 兼容性只是事实 | 接口表 + 承诺写入本节 |
 
 ## 6. 什么写在哪（内容归属）
 

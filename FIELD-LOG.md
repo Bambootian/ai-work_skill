@@ -7,6 +7,45 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-11 — v5.3 版本戳：机器级 skill 与项目文件的漂移可检测
+
+### RED（改前证据；形态 = 用户提问 + 本机实测）
+
+- 用户提问：skill 装在机器用户级，各项目在不同时间部署；机器 skill 更新后项目仍是旧版部署，
+  未执行中 / in-progress 两种项目会不会冲突，有什么机制。
+- 本机实测（v5.2 部署当日）：finance_tool 与 new_review_create 的项目文件都停在 v5.0 时代
+  （无 Now / 主线段，backlog 12.7KB / 340KB；无常设授权；hooks 含已切除的 warn-apply-phase /
+  warn-toolchain-stale，Tier 2 旧写法模型看不见，Tier 1 无 stdin UTF-8），机器 skill 已是 v5.2；
+  finance_tool CLAUDE.md 还留着「subagent 需确认」条款——项目 CLAUDE.md 优先级高于 skill，
+  这条会压掉 v5.1 起的常设授权，且无任何报错。两项目均无在途 change。
+- 根因：① bootstrap Step 0 在任何项目里跑都覆盖机器级 skill，立新项目 = 静默升级所有老项目的
+  skill 层；② 项目文件与 skill 都没有版本戳，漂移只能靠 Session Start 的形态启发式（North Star /
+  Now / 主线）撞上，config.yaml、hook 写法、旧规则条款都不在检查范围。
+- 冲突分四类（危险降序）：优先级倒置（旧项目规则压新 skill，静默）；harness 漂移（旧 hook
+  看不见 / 放行，模型无法自察）；形态不匹配（有部分兜底）；在途 change 跨版本（最安全：状态在
+  文件，Loop Contract 四字段 v4.1 起未变，新增行 Close 补）。
+
+### 修复（v5.3）
+
+| 项 | 处置 |
+|---|---|
+| 版本戳 | 仓库根 `VERSION`（= tag）；bootstrap Step 0 部署 skill 后写 `~/.claude/my-work-skill.toolkit-version`；Step 2 与迁移收尾把版本写进项目 CLAUDE.md Toolkit 行 |
+| Session Start | templates/CLAUDE.md 第一步改为比对 Toolkit 行版本与机器标记文件，不等或缺失 → 先迁移再路由；形态检查保留作兜底 |
+| 迁移时机 | bootstrap 迁移段：绿树 task 边界、单独 docs commit、在途契约不动、Close 补行；Toolkit 行改版本 = 迁移完成的定义；v5.2→v5.3 段只补版本行 |
+| 兼容承诺 | GUIDE §5 接口表：CLAUDE.md / backlog 段名、Loop Contract 四字段、路由三行、hooks 清单、config.yaml 键、版本戳；minor 只增不改不删，改 = major + 迁移 |
+| 不做 | SessionStart hook（先文本比对；模型跳过再降 hook，零误报场景）；项目级 `.claude/skills/` 钉版本（隔离彻底但改进不再自动到达；版本戳无论如何先做） |
+
+### 验证（2026-09-11）
+
+- 本机部署 v5.3 skill 副本并写标记文件 `~/.claude/my-work-skill.toolkit-version` = `v5.3`；两个
+  存量项目 CLAUDE.md 无版本行 → 下次 Session Start 按「任一缺失」触发迁移（预期）。
+- 存量项目迁移本身是各项目实践，用户逐项目跑 bootstrap 确认落盘。
+
+### GREEN 观察位（两个存量项目迁移时回填）
+
+- ① Session Start 是否真的先比对再路由（还是直接开工）；② 迁移 commit 是否落在绿树 task 边界；
+  ③ finance_tool 旧确认条款是否被 grep 删除；④ 迁移后 Toolkit 行版本是否改为 v5.3。
+
 ## 2026-09-11 — v5.2 WORKFLOW.md 退役：hooks/ 落地、archive 交回 OpenSpec、opsx 约定下沉 config.yaml
 
 ### RED（改前证据；形态 = 官方文档核实 + 存量项目实测，非运行时失败）

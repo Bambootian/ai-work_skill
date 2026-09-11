@@ -1,9 +1,9 @@
 # my-work-skill
 
-AI 工程开发工作流 v5.2：契约内核 + 主线锚定 + 2026 frontier class 模型适配（能力下限 Opus 5），
+AI 工程开发工作流 v5.3：契约内核 + 主线锚定 + 2026 frontier class 模型适配（能力下限 Opus 5），
 对齐 OpenSpec 1.13。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
-`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）；v5.2（WORKFLOW.md 退役）无独立
-spec，记录见 `FIELD-LOG.md` 2026-09-11。
+`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）；v5.2（WORKFLOW.md 退役）与
+v5.3（版本戳）无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
 
 ## 目录结构约定
 
@@ -13,6 +13,7 @@ my-work-skill/
 ├── GUIDE.md                 # 使用指南：设计原理、循环速查、决策记录、排查要点、版本对照、内容归属表
 ├── FIELD-LOG.md             # 实测日志（append-only）：RED/GREEN 证据链 + ablation 台账
 ├── LICENSE                  # MIT
+├── VERSION                  # 发版版本（= tag）；bootstrap 写进项目 Toolkit 行与机器标记文件，Session Start 比对
 ├── docs/specs/              # 设计契约
 ├── docs/plans/              # 实现计划
 ├── hooks/                   # PreToolUse / PostToolUse 脚本源码 + README（原则、注册片段、heavy-test 三问、echo 用例）
@@ -36,6 +37,7 @@ my-work-skill/
 - 新经验进 GUIDE.md 与 skills，实测证据进 FIELD-LOG.md；hook 脚本只改 `hooks/`，改完跑其 README 的 echo 用例。
   WORKFLOW.md v3.6 已退役（v5.2），原文见 tag v5.1。
 - 模型下限 Opus 5：不为更弱模型加约束，不为特定模型建特调层。
+- 发版：改 `VERSION`、README 版本表、GUIDE §5 对照表，tag 同名；动到 GUIDE §5 接口表里的东西 = major。
 
 ## 部署
 
@@ -46,6 +48,7 @@ my-work-skill/
 
 | tag | 日期 | 内容 |
 |---|---|---|
+| v5.3 | 2026-09-11 | 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ 机器标记文件，Session Start 比对触发迁移；迁移时机规则；接口兼容承诺 |
 | v5.2 | 2026-09-11 | WORKFLOW.md 退役：hook 源码落 `hooks/`，archive 交回 OpenSpec CLI，opsx 约定下沉 config.yaml 模板；对齐 OpenSpec 1.13 |
 | v5.1 | 2026-09-11 | 主线锚定：索引式 backlog、subagent 常设授权、spec critic、两层回顾 |
 | v5.0 | 2026-08-14 | 减法重构：契约内核、两行路由、面向 2026 frontier class 模型（下限 Opus 5） |

@@ -13,11 +13,14 @@
 
 ## Toolkit
 - my-work-skill clone: <绝对路径>（`hooks/` 源码、`templates/`、GUIDE §6 归属表在此解析）
+- 版本: <vX.Y>（bootstrap 写入 = 本项目文件对应的工具包版本；迁移完成才改）
 
 ## Session Start
-读 North Star 段；读 backlog.md 的 Now 段与主线段（缺文件或缺这两段 → 先跑 project-bootstrap
-迁移）；找在途 change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 行报告
-状态并直接继续，只在 gate 或阻塞时问。
+先比对 Toolkit 版本与 `~/.claude/my-work-skill.toolkit-version`（机器上已部署的 skill 版本）：
+不等或任一缺失 → 先跑 project-bootstrap 迁移（绿树 task 边界、单独 docs commit）再继续。
+读 North Star 段；读 backlog.md 的 Now 段与主线段（缺文件或缺这两段同样先迁移）；找在途
+change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 行报告状态并直接继续，
+只在 gate 或阻塞时问。
 
 ## Hard Rules
 - 任何 change 先经 change-loop 路由，再动 spec 或代码

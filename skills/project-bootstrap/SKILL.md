@@ -1,6 +1,6 @@
 ---
 name: project-bootstrap
-description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project CLAUDE.md missing its North Star section or backlog.md missing / lacking Now and 主线 sections.
+description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1/v5.2 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project's Toolkit version differing from ~/.claude/my-work-skill.toolkit-version, the project CLAUDE.md missing its North Star section, or backlog.md missing / lacking Now and 主线 sections.
 ---
 
 # Project Bootstrap
@@ -17,12 +17,15 @@ hook 的日后回补）。
 2. clone 干净则 `git -C <toolkit> pull`；复制 `skills/*` → `~/.claude/skills/`（覆盖——
    部署的是副本，不会自更新；项目级 `.claude/skills/` 有副本的项目同样覆盖）；**同时删除
    工具包已移除的 skill 目录（如 toolchain-refresh）**——覆盖复制不清理死副本，死 skill
-   的触发词仍会命中。
+   的触发词仍会命中。复制完把 `<toolkit>/VERSION` 写入 `~/.claude/my-work-skill.toolkit-version`
+   ——这是「机器上部署的是哪版」的唯一记录，Session Start 拿它和项目 Toolkit 行比对。**这一步在
+   任何项目里跑都会升级机器级 skill，其他项目下次 Session Start 会因版本不等被要求迁移——这是
+   设计，不是事故。**
 3. 前置：superpowers 插件在（brainstorming / systematic-debugging 是循环依赖）；缺 →
    `/plugin marketplace add obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace`
    → `/plugin list` 确认 enabled。中型项目 `npx @fission-ai/openspec@latest --version` 可用（Node ≥ 20.19）。
 
-机器已是最新（路径文件在、skills 一致、无死目录）→ 一行说明，继续。
+机器已是最新（路径文件在、skills 与 toolkit 一致、无死目录、标记文件 = VERSION）→ 一行说明，继续。
 
 ## Step 1 — 立项 brainstorm
 
@@ -39,7 +42,8 @@ hook 的日后回补）。
 
 ## Step 2 — 回填（AI 起草 → 人逐行确认 → commit）
 
-1. `CLAUDE.md` 从 toolkit 的 `templates/CLAUDE.md` 起草，North Star 段填 brainstorm 结果。
+1. `CLAUDE.md` 从 toolkit 的 `templates/CLAUDE.md` 起草，North Star 段填 brainstorm 结果，
+   Toolkit 行填 clone 路径与 `<toolkit>/VERSION`。
 2. `backlog.md` 从 `templates/backlog.md` 起草（所有规模）：主线段填 brainstorm 的路径，
    Now 段指向第 1 步。
 3. 中型：`npx @fission-ai/openspec@latest init`（Claude Code，core profile）；`openspec/config.yaml`
@@ -49,7 +53,11 @@ hook 的日后回补）。
 
 无 `<placeholder>` 存活——填不出 = Step 1 没做完，回去。
 
-**存量项目迁移**（幂等；AI 起草 → 人确认后落盘）：
+**存量项目迁移**（幂等；AI 起草 → 人确认后落盘）。触发：Session Start 版本比对不等，或形态
+缺失。时机：只在绿树 task 边界做，单独一个 docs commit（`chore: migrate toolkit <旧> -> <新>`），
+不在红迭代里迁；在途 change 的 Loop Contract 与 tasks.md 不动，Close 按新 skill 补 `Gate:` /
+`主线:` 行（兼容承诺见 GUIDE §5）。从项目 Toolkit 行的版本起，按下面各段顺序执行到当前版本；
+**最后把 Toolkit 行版本改成 `<toolkit>/VERSION`——这是迁移完成的定义**，没改下次 session 还会触发。
 
 - v3/v4：NORTH_STAR.md 只保留终态 + 判据 + anti-scope 并入 CLAUDE.md North Star 段后删除
   该文件（Review Log 与历史注记进 git）；`openspec/` 与既有 hooks 保留；移除 `$PROFILE` 中的
@@ -67,6 +75,7 @@ hook 的日后回补）。
   commands，补 `/opsx:update` 等）；`openspec/config.yaml` 对照 `templates/openspec-config.yaml`
   补 context / rules / operations 段（`schema:` 行不动）；`.claude/scripts/` 对照 `hooks/` 重部署
   全部 hook（Tier 1 也改了 stdin UTF-8 + 坏 JSON exit 1；Tier 2 旧写法模型看不见）并重跑 echo 用例。
+- v5.2 → v5.3：只有 Toolkit 行补 `版本:`（由上面的收尾动作完成）。
 
 ## Step 3 — Hooks（此时 stack 已知）
 
@@ -114,3 +123,4 @@ in.json 为无 BOM UTF-8 且含中文。挂载后在会话里真跑一次被拦�
 - 跳过 echo 测试（hook 静默死掉 = 你相信一个不存在的强制层）。
 - 把 bootstrap 完成当 propose 许可（第一个 change 与所有 change 一样从路由开始）。
 - 迁移时只加新规则不删旧规则（项目 CLAUDE.md 优先级高于 skill，旧计数触发会压过新触发表）。
+- 迁移做了一半没改 Toolkit 行版本（下次 session 重复触发），或改了版本没做迁移（漂移被掩盖）。
