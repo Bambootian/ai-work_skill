@@ -7,6 +7,29 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-11 — finance_tool 迁移回灌（v5.5 补丁；首个 OpenSpec 项目）
+
+finance_tool（v5.0 立项，OpenSpec，12 归档）按 v5.5 完成迁移，无人值守走「先提交后确认」。
+回报 7 条真踩 + 5 条顺手确认。核实与处置：
+
+| # | 观察 | 处置 |
+|---|---|---|
+| 1 | 项目 `.claude/skills/` 有 v4 副本（含死的 toolchain-refresh），用户级是 v5.5；两处都被扫描，同名谁生效不透明 | Step 0：项目级工具包 skill 副本一律删除，只留用户级一份 |
+| 2 | `openspec config profile` 无非交互加单 workflow 的方法（本机核实：只有交互选择器或 preset）；该会话直接改全局 config.json 加 update / sync（现为 core 六个 + verify） | Step 0 写明：非交互只能编辑 config.json 的 workflows；机器级，影响所有项目，是期望状态 |
+| 3 | `openspec update` 整体覆盖生成文件；事后才查无本地定制 | v5.1→v5.2 段：update 前先 `git log` 生成目录确认无定制 |
+| 4 | 交互会话但 harness 说用户不在实时看，按无人值守先 commit | 迁移段加判定：以 harness 说明为准，拿不准按无人值守 |
+| 5 | R1 归档只有 spec-lite.md，无 proposal.md | 瘦身①、change-loop Errata、GUIDE §6 都注「R1 为 spec-lite.md」 |
+| 6 | 删 skill 不等于删引用：living spec 仍写 toolchain-refresh、「NORTH_STAR.md MUST NOT 被修改」 | 迁移段加「引用清扫」：CLAUDE.md / backlog 直接改，living spec 记支线走 change-loop |
+| 7 | `git rm` 后 `git add -A -- <已删文件>` 报 pathspec | 不记（git 常识） |
+| 顺手 | warn-backlog-size 当场生效，瘦身期间每条命令都响 | 迁移段：hooks 重部署放瘦身之后 |
+| 顺手 | 项目自有 warn-due-checkpoints：BOM + 中文 + 无 OutputEncoding，SessionStart 乱码 | 迁移段：项目自有 hook 按写法法则体检，不合规记支线 |
+| 顺手 | Git Bash `!` 前缀把 `/c` 改写成 `C:/`，我给的 `chcp 65001` 没跑 | README / GUIDE §4：Git Bash 里写 `cmd //c` |
+| 顺手 | core.autocrlf=true 下 LF 文件 commit 刷 CRLF 警告 | 无害，不动 |
+| 乱码 | 该会话按配方跑前 65001、跑后恢复 65001，终端仍在跑用例期间被画坏（ASCII 被吞 = cp936 把 TUI 的 UTF-8 多字节当双字节解） | **根治**：echo 用例改在独立隐藏控制台跑（`Start-Process cmd -WindowStyle Hidden -Wait -PassThru`），`chcp` 永远打不到会话窗口。本机验证：子控制台设 437、父控制台前后都是 936、exit 2 与输出正常捕获 |
+
+正面确认：cp936 + 中文载荷 + 坏 JSON 全过；Tier 1 两个 hook 在会话里真拦住了 Skill 与 Write。
+无接口变化，不升版本。
+
 ## 2026-09-11 — zd-tool 迁移回灌（v5.5 补丁，无项目动作）
 
 zd-tool（v4.1 立项的小型项目）按 v5.5 完成迁移，回报 6 条 toolkit 项 + 2 条通用坑（后者由该会话

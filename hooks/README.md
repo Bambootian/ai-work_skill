@@ -87,22 +87,21 @@ PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
 
 ## Echo 用例（没跑过的 hook 不算部署）
 
-在 PowerShell 里执行；走真实 stdin 并模拟默认代码页；`in.json` 为无 BOM UTF-8 且含中文：
+在 PowerShell 里执行；**在独立的隐藏控制台里跑**，走真实 stdin 并模拟默认代码页，`chcp` 永远
+打不到会话窗口；`in.json` 为无 BOM UTF-8 且含中文：
 
 ```powershell
-$cp = (cmd /c chcp) -replace '\D', ''                      # 先记原始代码页——在本会话任何 chcp 之前
-try {
-  cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 < in.json 2>&1"
-  "exit=$LASTEXITCODE"                                     # 2>&1 写在 cmd 字符串内：stderr 与 exit 一次拿到
-} finally { cmd /c "chcp $cp >nul" }                       # 恢复；中途出错也恢复
+$p = Start-Process -FilePath cmd -ArgumentList '/c', "chcp 936 >nul & powershell -NoProfile -File .claude\scripts\<hook>.ps1 < in.json > out.txt 2>&1" -WindowStyle Hidden -Wait -PassThru
+"exit=$($p.ExitCode)"; Get-Content out.txt              # exit = powershell 的退出码；out.txt 含 stdout + stderr
 ```
 
-两个坑（2026-09-11 sports 部署 + toolkit 会话各实测一次）：单行 `cmd /c "... & echo exit=%errorlevel%"`
-里 `%errorlevel%` 在执行前就展开，**永远打印 0**，会把失效的 Tier 1 判成通过——必须读
-`$LASTEXITCODE`（或 `cmd /v:on /c "... & echo exit=!errorlevel!"`）；子进程 `chcp` 改的是共享
-控制台的代码页，本会话之后的输出全部乱码。记代码页必须在**任何** chcp 之前——泄漏之后再读，
-读到的就是泄漏值，「恢复」等于没恢复。已经乱了不用重启：Claude Code 终端默认 65001，
-`cmd /c "chcp 65001 >nul"` 即刻恢复。
+三个坑（2026-09-11 三个项目迁移实测）：单行 `cmd /c "... & echo exit=%errorlevel%"` 里
+`%errorlevel%` 在执行前就展开，**永远打印 0**，会把失效的 Tier 1 判成通过——必须读进程退出码
+（上面的 `$p.ExitCode`，或同一控制台里的 `$LASTEXITCODE`）；在会话自己的控制台里跑 `chcp` 会改
+共享代码页，跑用例那段时间 TUI 画到屏幕的行已经坏了（ASCII 被吞），事后恢复救不回——所以用
+上面的独立控制台形式，不要在会话里 `chcp`；已经乱了不用重启：PowerShell 里
+`cmd /c "chcp 65001 >nul"`，Git Bash（含 `!` 前缀）里要写 `cmd //c`，否则 `/c` 被改写成 `C:/`
+根本没跑。
 
 | hook | 输入 | 期望 |
 |---|---|---|

@@ -108,8 +108,8 @@ R3 三视角（+ skeptic）+ 人。发现分诊：[blocking] = 违反 spec/契�
   *Source: change `<id>` (archived <date>)*，被推翻的旧决策不删、改写为 *Superseded by <new>,
   see change `<new-id>`* → `openspec validate --specs` 0 失败、`openspec list` 无 active change
   （不加 `--strict`）。非 OpenSpec 项目：根 `SPEC.md` 移入 `docs/changes/<id>.md`。Close 内容
-  与读数留在归档；对已归档 change 的订正追加到归档文件（OpenSpec 归档目录：proposal.md）
-  末尾 `## Errata`，不写 backlog。
+  与读数留在归档；对已归档 change 的订正追加到归档文件（OpenSpec 归档目录：proposal.md，R1 为
+  spec-lite.md）末尾 `## Errata`，不写 backlog。
 - 更新 backlog.md：主线步出口态 DONE 才打勾（DONE-ungated 补跑 gate 后打勾；SPLIT 子 change
   全 DONE 打勾）；支线完成即删该行（归档与 git 有）。Now 覆盖前先读旧 Now——悬而未决只能
   核销或结转（欠的 gate 在此），不能消失；支线计数：主线推进或 route check 后清零，支线

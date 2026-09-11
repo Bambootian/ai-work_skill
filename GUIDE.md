@@ -68,8 +68,9 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + stderr，`exit 0 + stdout`
 只进 debug 日志（SessionStart / UserPromptSubmit 例外，纯文本可见）；脚本只含 ASCII 且
 stdin / stdout / stderr 都显式 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测试测不出来。
-echo 用例 exit 全 0 → 先怀疑配方（单行 cmd 里 `%errorlevel%` 提前展开）再怀疑 hook；跑过
-`chcp` 后会话乱码 → 代码页没恢复，不是编码 bug（hooks/README「Echo 用例」）。
+echo 用例 exit 全 0 → 先怀疑配方（单行 cmd 里 `%errorlevel%` 提前展开）再怀疑 hook；会话乱码 →
+有人在会话控制台里跑了 `chcp`（echo 用例要在独立控制台跑，hooks/README「Echo 用例」），
+`chcp 65001` 即刻恢复，Git Bash 里写 `cmd //c`。
 
 ## 5. 版本对照速查
 
@@ -157,7 +158,7 @@ backlog 膨胀的根因是这些内容没有指定的家。写之前查表；bac
 | 主线路径、下一步、触发在望的支线 | backlog.md |
 | session 交接（位置 / 下一步 / 悬而未决 / 支线计数） | backlog.md Now 段，整段覆盖、债务结转 |
 | 长尾 watch、冰箱（kill + 复活条件） | `docs/watchlist.md`，同支线行格式；backlog 一行指过去 |
-| 单个 change 的过程、读数、gate 结果、失败注记、事后订正（`## Errata`） | change 归档（openspec archive 的 proposal.md / `docs/changes/<id>.md`） |
+| 单个 change 的过程、读数、gate 结果、失败注记、事后订正（`## Errata`） | change 归档（openspec archive 的 proposal.md，R1 为 spec-lite.md / `docs/changes/<id>.md`） |
 | 已定规格、未开工的步 | 前置探针的归档，或 `docs/notes/`；backlog 主线行只留一句 + 路径 |
 | 架构决策 + 为什么 + 失效前提 | capability 级：主 spec `## Architectural Decisions`（change-loop §5 Close，带 Source / Superseded）；项目级：ARCHITECTURE.md / DESIGN.md Decisions |
 | change 之间的人裁定（产品 / 流程级） | `docs/decisions.md`，一行一条：日期｜裁定｜理由｜失效前提；论证长的另附 notes 路径 |
