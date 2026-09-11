@@ -1,6 +1,6 @@
 ---
 name: project-bootstrap
-description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1/v5.2 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project's Toolkit version differing from ~/.claude/my-work-skill.toolkit-version, the project CLAUDE.md missing its North Star section, or backlog.md missing / lacking Now and 主线 sections.
+description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1/v5.2/v5.3 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project's Toolkit version differing from ~/.claude/my-work-skill.toolkit-version, the project CLAUDE.md missing its North Star section, or backlog.md missing / lacking Now and 主线 sections.
 ---
 
 # Project Bootstrap
@@ -56,7 +56,10 @@ hook 的日后回补）。
 **存量项目迁移**（幂等；AI 起草 → 人确认后落盘）。触发：Session Start 版本比对不等，或形态
 缺失。时机：只在绿树 task 边界做，单独一个 docs commit（`chore: migrate toolkit <旧> -> <新>`），
 不在红迭代里迁；在途 change 的 Loop Contract 与 tasks.md 不动，Close 按新 skill 补 `Gate:` /
-`主线:` 行（兼容承诺见 GUIDE §5）。从项目 Toolkit 行的版本起，按下面各段顺序执行到当前版本；
+`主线:` 行（兼容承诺见 GUIDE §5）。从项目 Toolkit 行的版本起，按下面各段顺序执行到当前版本
+（无 `版本:` 行 = v5.3 前立项，按形态推断起点：有 NORTH_STAR.md / PROTOCOL.md / warn-toolchain-stale
+→ v4；backlog 无 Now / 主线段 → v5.0；hook 无 stdin UTF-8 行 → v5.1；config.yaml 无 operations 段
+→ v5.2；hook 无 OutputEncoding 行 → v5.3；拿不准取更早的）；
 **最后把 Toolkit 行版本改成 `<toolkit>/VERSION`——这是迁移完成的定义**，没改下次 session 还会触发。
 
 - v3/v4：NORTH_STAR.md 只保留终态 + 判据 + anti-scope 并入 CLAUDE.md North Star 段后删除
@@ -76,6 +79,8 @@ hook 的日后回补）。
   补 context / rules / operations 段（`schema:` 行不动）；`.claude/scripts/` 对照 `hooks/` 重部署
   全部 hook（Tier 1 也改了 stdin UTF-8 + 坏 JSON exit 1；Tier 2 旧写法模型看不见）并重跑 echo 用例。
 - v5.2 → v5.3：只有 Toolkit 行补 `版本:`（由上面的收尾动作完成）。
+- v5.3 → v5.4：`.claude/scripts/` 对照 `hooks/` 重部署（补 OutputEncoding、Tier 1 提示语栈无关），
+  按 hooks/README 新配方重跑 echo 用例（旧配方 exit 永远 0）。
 
 ## Step 3 — Hooks（此时 stack 已知）
 
@@ -95,17 +100,20 @@ echo 用例表）。复制到 `.claude/scripts/` + 注册进 `.claude/settings.j
 部署清单（6 个，`hooks/` 已按上述法则写成，原样复制）：
 
 - `block-unsafe-test-commands`（heavy-test）：走 hooks/README 的 Day-1 三问填三个占位符，
-  去掉 `-TEMPLATE` 后缀；「暂无重测试」是合法答案，出现时重跑本步。测试命令纪律同时写进
-  CLAUDE.md Stack & Conventions 与 `openspec/config.yaml` context。
+  去掉 `-TEMPLATE` 后缀；「暂无重测试」是合法答案——落点 CLAUDE.md Stack & Conventions 一行
+  「无重型测试，未部署 heavy-test hook（<date>）」+ backlog 支线一行（触发：出现重型测试），
+  之后的 session 不重问。测试命令纪律同时写进 CLAUDE.md Stack & Conventions 与
+  `openspec/config.yaml` context。
 - `block-replaced-skills`、`block-superpowers-specs-dir`（Tier 1，PreToolUse）。
 - `warn-destructive-git`、`warn-route-before-opsx`（Tier 2，JSON additionalContext）；后者的
   命令名单先核对已装 OpenSpec 版本。
 - `warn-backlog-size`：注册在 `"PostToolUse"` 段，matcher `Write|Edit|Bash|PowerShell`。
 
 每个部署的脚本跑 hooks/README 用例表里的 echo 用例并粘贴输出——**没 echo 测过的 hook 不算
-部署**（静默死掉的 hook 比没有更坏，你以为强制层存在）。echo 从 PowerShell 执行、走真实
-stdin 并模拟默认代码页：`cmd /c "chcp 936 >nul & powershell -NoProfile -File x.ps1 < in.json"`，
-in.json 为无 BOM UTF-8 且含中文。挂载后在会话里真跑一次被拦的命令确认 matcher 生效。
+部署**（静默死掉的 hook 比没有更坏，你以为强制层存在）。配方照 hooks/README「Echo 用例」：
+PowerShell 里 `cmd /c "chcp 936 >nul & powershell -NoProfile -File x.ps1 < in.json"` 后读
+`$LASTEXITCODE`（`echo exit=%errorlevel%` 永远打 0），跑前记代码页、跑完恢复（否则会话乱码到
+重启）；in.json 为无 BOM UTF-8 且含中文。挂载后在会话里真跑一次被拦的命令确认 matcher 生效。
 
 ## Step 4 — 收尾
 

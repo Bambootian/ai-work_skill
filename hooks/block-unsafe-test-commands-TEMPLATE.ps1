@@ -44,6 +44,7 @@
 #
 # Exit 2 = block; stderr is shown to the model. Bad stdin JSON = exit 1.
 [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
 try { $json = [Console]::In.ReadToEnd() | ConvertFrom-Json -ErrorAction Stop }
 catch { [Console]::Error.WriteLine('block-unsafe-test-commands: bad stdin JSON'); exit 1 }
 $cmd = [string]$json.tool_input.command

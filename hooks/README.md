@@ -12,17 +12,19 @@
 | 不造成死锁 | 硬 block 仅限「该项目里永远不合法」的行为；有合法例外的用软提醒 |
 | 分层 | Tier 1 硬 block = exit 2 + stderr；Tier 2 软提醒 = exit 0 + JSON additionalContext，或 exit 2 + stderr |
 
-**写法法则**（2026-09-08 实测 Claude Code 2.1.259 + Windows PowerShell 5.1，缘由见
+**写法法则**（2026-09-08 / 09-11 实测 Claude Code 2.1.259 + Windows PowerShell 5.1，缘由见
 project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hookSpecificOutput.additionalContext`
-或 exit 2 + stderr，`exit 0 + 纯文本 stdout` 只进 debug 日志；脚本只含 ASCII，读 stdin 前设
-UTF-8，坏 JSON 显式 exit 1。本目录脚本已全部按此写成。
+或 exit 2 + stderr，`exit 0 + 纯文本 stdout` 只进 debug 日志；脚本只含 ASCII（检查用 python 读
+字节，别用 `grep -P`）；stdin **和 stdout / stderr 都**显式设 UTF-8——只设 InputEncoding 时，
+输出里引用的输入原文（如被拦的命令）按 cp936 编码，会话里显示为乱码；坏 JSON 显式 exit 1。
+本目录脚本已全部按此写成。
 
 ## 清单
 
 | 脚本 | 事件 / matcher | Tier | 行为 |
 |---|---|---|---|
-| `block-replaced-skills.ps1` | PreToolUse / `Skill` | 1 | 阻断 writing-plans / executing-plans（OpenSpec propose / apply 永久替代） |
-| `block-superpowers-specs-dir.ps1` | PreToolUse / `Write` | 1 | 阻断写入 `docs/superpowers/specs/` |
+| `block-replaced-skills.ps1` | PreToolUse / `Skill` | 1 | 阻断 writing-plans / executing-plans（change-loop 路由与内环替代；OpenSpec 项目对应 propose / apply）|
+| `block-superpowers-specs-dir.ps1` | PreToolUse / `Write` | 1 | 阻断写入 `docs/superpowers/specs/`（spec 位置由 change-loop 决定：openspec/changes/ 或根 SPEC.md） |
 | `block-unsafe-test-commands-TEMPLATE.ps1` | PreToolUse / `Bash\|PowerShell` | 1 | 阻断裸跑测试命令（无 filter、无 escape var）；填空后去掉 `-TEMPLATE` |
 | `warn-destructive-git.ps1` | PreToolUse / `Bash\|PowerShell` | 2 | `reset --hard` / `push -f` / `checkout .` / `restore .` / `clean -f` / `branch -D` 提醒 |
 | `warn-route-before-opsx.ps1` | PreToolUse / `Skill` | 2 | `opsx:propose\|new\|ff` 前提醒先做 change-loop 路由声明 |
@@ -84,11 +86,18 @@ PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
 
 ## Echo 用例（没跑过的 hook 不算部署）
 
-从 PowerShell 走真实 stdin 并模拟默认代码页；`in.json` 为无 BOM UTF-8 且含中文：
+在 PowerShell 里执行；走真实 stdin 并模拟默认代码页；`in.json` 为无 BOM UTF-8 且含中文：
 
+```powershell
+$cp = (cmd /c chcp) -replace '\D', ''                      # 记住当前代码页
+cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 < in.json"
+"exit=$LASTEXITCODE"
+cmd /c "chcp $cp >nul"                                     # 恢复；不恢复本会话之后的输出全是乱码，直到重启
 ```
-cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 < in.json & echo exit=%errorlevel%"
-```
+
+两个坑（2026-09-11 sports 部署实测）：单行 `cmd /c "... & echo exit=%errorlevel%"` 里 `%errorlevel%`
+在执行前就展开，**永远打印 0**，会把失效的 Tier 1 判成通过——必须读 `$LASTEXITCODE`（或
+`cmd /v:on /c "... & echo exit=!errorlevel!"`）；子进程 `chcp` 改的是共享控制台的代码页。
 
 | hook | 输入 | 期望 |
 |---|---|---|
@@ -111,6 +120,9 @@ cmd /c "chcp 936 >nul & powershell -NoProfile -File .claude/scripts/<hook>.ps1 <
 | 所有 hook | 坏 JSON | stderr，exit 1 |
 
 hook 挂载后在会话里真跑一次被拦的命令确认 matcher 生效：echo 只证明脚本对，不证明挂对了 tool。
+warn-backlog-size 的真跑：备份 backlog.md 到 scratchpad → 用 Write 追加 9KB 中文 → 应出现
+PostToolUse 提醒 → 从备份恢复并 cmp 一致。已知误报：warn-destructive-git 对命令文本里的字面量
+（写 fixture、生成文档）也响，Tier 2 无害，不改。
 
 ## 不做 hook 的约束
 

@@ -4,6 +4,7 @@
 # Exit 0 + JSON additionalContext (the only exit-0 output the model can see
 # on tool events). Bad stdin JSON = exit 1.
 [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
 try { $json = [Console]::In.ReadToEnd() | ConvertFrom-Json -ErrorAction Stop }
 catch { [Console]::Error.WriteLine('warn-destructive-git: bad stdin JSON'); exit 1 }
 $cmd = [string]$json.tool_input.command

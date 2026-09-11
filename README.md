@@ -1,9 +1,9 @@
 # my-work-skill
 
-AI 工程开发工作流 v5.3：契约内核 + 主线锚定 + 2026 frontier class 模型适配（能力下限 Opus 5），
+AI 工程开发工作流 v5.4：契约内核 + 主线锚定 + 2026 frontier class 模型适配（能力下限 Opus 5），
 对齐 OpenSpec 1.13。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
 `docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）；v5.2（WORKFLOW.md 退役）与
-v5.3（版本戳）无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
+v5.3（版本戳）、v5.4（首次迁移回灌）无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
 
 ## 目录结构约定
 
@@ -48,6 +48,7 @@ my-work-skill/
 
 | tag | 日期 | 内容 |
 |---|---|---|
+| v5.4 | 2026-09-11 | sports 首次迁移回灌：echo 配方改读 `$LASTEXITCODE` 并恢复代码页，hook 输出 UTF-8，Tier 1 提示语栈无关，迁移起点按形态推断 |
 | v5.3 | 2026-09-11 | 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ 机器标记文件，Session Start 比对触发迁移；迁移时机规则；接口兼容承诺 |
 | v5.2 | 2026-09-11 | WORKFLOW.md 退役：hook 源码落 `hooks/`，archive 交回 OpenSpec CLI，opsx 约定下沉 config.yaml 模板；对齐 OpenSpec 1.13 |
 | v5.1 | 2026-09-11 | 主线锚定：索引式 backlog、subagent 常设授权、spec critic、两层回顾 |

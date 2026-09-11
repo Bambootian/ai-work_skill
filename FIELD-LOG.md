@@ -7,6 +7,57 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-11 — v5.4 sports 首次迁移回灌：echo 配方假阳性、hook 输出编码、迁移起点推断
+
+### RED（改前证据；形态 = 首个迁移项目的实测报告 + 本机复现）
+
+- sports（v5.0 立项的小型项目）按 v5.3 跑「部署工作流」，无人值守完成迁移（3 commits，5 hooks，
+  echo 18/18）。回报 7 条 toolkit 缺陷 + 3 条流程观察（原文：sports scratchpad
+  `deploy-issues-2026-09-11.md`）。
+- **A1 高**：hooks/README 与 bootstrap 的 echo 配方 `cmd /c "... & echo exit=%errorlevel%"` 永远打 0——
+  cmd 单行在执行前展开 `%errorlevel%`。本机复现：README 形式 0，`cmd /v:on` + `!errorlevel!` 2，
+  PowerShell `$LASTEXITCODE` 2。今天 v5.2 的 32/32 是 Python 读 returncode，所以没撞上；照 README
+  做会把失效的 Tier 1 判成通过——正是「静默死掉的 hook 比没有更坏」。
+- **A2 中**：脚本只设 InputEncoding，stdout / stderr 仍按控制台代码页 936 编码；输出里引用输入原文
+  （被拦的命令）的中文在会话里乱码。本机复现 stdout 与 stderr 同样：无 OutputEncoding 时 cp936
+  字节、加一行后 UTF-8 字节，exit 不变。附带发现：子进程 `chcp` 改的是共享控制台的代码页（子 cmd
+  设 437 后主控制台查到 437），用户会话乱码到重启就是这个——配方没恢复代码页。
+- A3 低：两个 Tier 1 block 的提示语假定 OpenSpec（小型项目被拦时指路 /opsx:propose）。A4 中：v5.3 前
+  立项的项目无 `版本:` 行，迁移段「从 Toolkit 行版本起」无处读，sports 用 commit 日期对 tag 日期推出
+  v5.0。A5 低：「暂无重测试」无落点，下个 session 重问三问。A6 低：warn-backlog-size 挂载真跑要造
+  超标文件，无配方。A7 低：warn-destructive-git 对命令文本字面量也响（写 fixture / 文档），只记不改。
+- 流程观察：B1 迁移「人确认后落盘」与无人值守冲突，sports 先 commit 后确认；B2 value-review 观察位
+  #7 命中 1 次（CLAUDE.md「当前阶段重点」停在已收官的 M0），已按处理法改指向 backlog Now；
+  B3 操作教训：ASCII 检查用 python 读字节（`grep -P` 在非 UTF-8 locale 报错且 `|| echo` 给假通过）、
+  一条命令只做一件事（heredoc 后半段解析失败但前半段已落盘）——本仓库今天两次踩同一坑。
+
+### 修复（v5.4）
+
+| 项 | 处置 |
+|---|---|
+| A1 | hooks/README、bootstrap Step 3、GUIDE §4：配方改 PowerShell 读 `$LASTEXITCODE`，写明 `%errorlevel%` 陷阱与 `/v:on` 替代；跑前记代码页、跑后恢复 |
+| A2 | 6 个脚本补 `[Console]::OutputEncoding = UTF8`；写法法则改「stdin 和 stdout / stderr 都显式 UTF-8」 |
+| A3 | block-replaced-skills / block-superpowers-specs-dir 提示语改栈无关（change-loop 路由 / SPEC-lite / docs/changes；OpenSpec 项目对应 propose / apply / openspec/changes） |
+| A4 | bootstrap 迁移段：无 `版本:` 行按形态推断起点（NORTH_STAR / PROTOCOL / warn-toolchain-stale → v4；无 Now / 主线 → v5.0；hook 无 stdin UTF-8 → v5.1；config.yaml 无 operations → v5.2；hook 无 OutputEncoding → v5.3；拿不准取更早） |
+| A5 | Step 3：「暂无重测试」落点 = CLAUDE.md Stack 一行 + backlog 支线一行（触发：出现重型测试），之后不重问 |
+| A6 / A7 | README 补 warn-backlog-size 真跑配方（备份 → 追加 9KB 中文 → 触发 → 恢复 cmp）；A7 记为已知误报 |
+| B3 | 写法法则补「ASCII 检查用 python 读字节」 |
+| 版本 | VERSION v5.4；迁移段 v5.3 → v5.4 = hooks 重部署 + 新配方重跑 echo（sports 也会被版本戳再触发一次——这正是它该干的） |
+| 待人拍 | B1 自治会话可否先提交后确认；B2 观察位 #7 是否升级为规则（删模板「当前阶段重点」改指向 backlog Now） |
+
+### 验证（2026-09-11）
+
+- 本机复现 A1 三种配方（0 / 2 / 2）、A2 stdout 与 stderr 字节对照、chcp 泄漏（437 → 恢复 936）。
+- 6 个脚本改后 Python 驱动 32/32 重跑通过；README 新配方对 block hook 实跑 `exit=2`，代码页跑前
+  跑后一致（65001）。
+- 复现脚本本身踩了 B3 的坑一次（BOM-less UTF-8 .ps1 含中文被 PS 5.1 按 cp936 读，字面量变
+  mojibake）——再次印证脚本只含 ASCII 的法则；测试夹具用 UTF-8 字节写文件。
+
+### GREEN 观察位（sports 重跑 v5.3 → v5.4、其余三项目迁移时回填）
+
+- ① 版本戳是否在 sports 下次 session 触发 v5.4 迁移；② 新配方 exit 是否如实（block 用例 2）；
+  ③ 迁移起点推断是否与实际立项版本一致；④ 「暂无重测试」是否不再被重问。
+
 ## 2026-09-11 — v5.3 版本戳：机器级 skill 与项目文件的漂移可检测
 
 ### RED（改前证据；形态 = 用户提问 + 本机实测）

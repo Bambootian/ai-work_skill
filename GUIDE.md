@@ -6,6 +6,7 @@
 > v5.2 = WORKFLOW.md v3.6 退役（原文见 tag v5.1）：hook 源码在 `hooks/`，archive 步骤在 change-loop §5，
 > spec 修订用 `/opsx:update`，opsx 流程内约定在 `templates/openspec-config.yaml`；对齐 OpenSpec 1.13。
 > v5.3 = 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ `~/.claude/my-work-skill.toolkit-version`，Session Start 比对；接口兼容承诺（§5）。
+> v5.4 = sports 首次迁移回灌：echo 配方假阳性、hook 输出编码、迁移起点推断、heavy-test 否定答案落点。
 
 ## 1. 设计原理（一页）
 
@@ -64,8 +65,10 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 
 **Hook 两条法则**（2026-09-08 实测 Claude Code 2.1.259）：工具事件（PreToolUse /
 PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + stderr，`exit 0 + stdout`
-只进 debug 日志（SessionStart / UserPromptSubmit 例外，纯文本可见）；脚本只含 ASCII 且读
-stdin 前设 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测试测不出来。
+只进 debug 日志（SessionStart / UserPromptSubmit 例外，纯文本可见）；脚本只含 ASCII 且
+stdin / stdout / stderr 都显式 UTF-8。写错任一条 = 静默失效，脚本自己的 echo 测试测不出来。
+echo 用例 exit 全 0 → 先怀疑配方（单行 cmd 里 `%errorlevel%` 提前展开）再怀疑 hook；跑过
+`chcp` 后会话乱码 → 代码页没恢复，不是编码 bug（hooks/README「Echo 用例」）。
 
 ## 5. 版本对照速查
 
@@ -125,6 +128,15 @@ major + 迁移段。在途 change 跨 minor 版本安全的前提就是这张表
 | 项目与机器都无版本记录，漂移靠 Session Start 猜形态（只查 North Star / Now / 主线） | `VERSION` 文件；bootstrap 写项目 Toolkit 行 `版本:` 与机器标记文件；Session Start 先比对，不等即迁移，形态检查留作兜底 |
 | 迁移无时机规则 | 绿树 task 边界、单独 docs commit；在途契约不动；Toolkit 行改版本 = 迁移完成 |
 | 兼容性只是事实 | 接口表 + 承诺写入本节 |
+
+**v5.3 → v5.4**（sports 首次迁移回灌，FIELD-LOG 2026-09-11）
+
+| v5.3 | v5.4 |
+|---|---|
+| echo 配方 `echo exit=%errorlevel%`（永远 0，失效 hook 判通过） | PowerShell 读 `$LASTEXITCODE`；跑前记、跑后恢复代码页 |
+| hook 只设 InputEncoding（引用原文中文乱码） | stdin / stdout / stderr 都 UTF-8；Tier 1 提示语栈无关 |
+| 无 `版本:` 行的项目迁移起点无处读 | 按形态推断（NORTH_STAR → v4；无 Now / 主线 → v5.0；…） |
+| 「暂无重测试」无落点，下次重问 | CLAUDE.md Stack 一行 + backlog 支线一行 |
 
 ## 6. 什么写在哪（内容归属）
 
