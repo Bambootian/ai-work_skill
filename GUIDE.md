@@ -7,6 +7,7 @@
 > spec 修订用 `/opsx:update`，opsx 流程内约定在 `templates/openspec-config.yaml`；对齐 OpenSpec 1.13。
 > v5.3 = 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ `~/.claude/my-work-skill.toolkit-version`，Session Start 比对；接口兼容承诺（§5）。
 > v5.4 = sports 首次迁移回灌：echo 配方假阳性、hook 输出编码、迁移起点推断、heavy-test 否定答案落点。
+> v5.5 = 用户裁定：无人值守迁移可先提交后确认；观察位 #7 升级为规则（North Star 不再写当前阶段）。
 
 ## 1. 设计原理（一页）
 
@@ -138,13 +139,20 @@ major + 迁移段。在途 change 跨 minor 版本安全的前提就是这张表
 | 无 `版本:` 行的项目迁移起点无处读 | 按形态推断（NORTH_STAR → v4；无 Now / 主线 → v5.0；…） |
 | 「暂无重测试」无落点，下次重问 | CLAUDE.md Stack 一行 + backlog 支线一行 |
 
+**v5.4 → v5.5**（用户裁定，FIELD-LOG 2026-09-11）
+
+| v5.4 | v5.5 |
+|---|---|
+| 迁移「人确认后落盘」，无人值守会话卡住 | 有人在场确认后落盘；无人值守先落盘单独提交，Now 记「待确认」，不同意 revert |
+| North Star 含「当前阶段重点」，与 backlog Now 必然漂移（观察位 #7） | North Star 只留终态 / 判据 / anti-scope，当前阶段只在 backlog Now |
+
 ## 6. 什么写在哪（内容归属）
 
 backlog 膨胀的根因是这些内容没有指定的家。写之前查表；backlog 只留一句 + 路径。
 
 | 内容 | 家 |
 |---|---|
-| 终态、成功判据、anti-scope、当前阶段 | CLAUDE.md North Star 段 |
+| 终态、成功判据、anti-scope | CLAUDE.md North Star 段（当前阶段不写这里，只在 backlog Now） |
 | 运行须知（命令、耗时、机器产物别手改） | CLAUDE.md Stack & Conventions |
 | 主线路径、下一步、触发在望的支线 | backlog.md |
 | session 交接（位置 / 下一步 / 悬而未决 / 支线计数） | backlog.md Now 段，整段覆盖、债务结转 |

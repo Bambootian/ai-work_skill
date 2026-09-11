@@ -3,7 +3,7 @@
 ## North Star
 - 一句话：<谁，通过这个项目，得到什么>
 - 成功判据（用户可观察）：<1–3 条>
-- 当前阶段重点：<一句话>
+- 当前阶段：见 backlog.md Now 段（此处不写，两处必不一致）
 - 永不做（anti-scope）：<...>
 - Outcome 三分类：user-value（用户可直接观察）/ enabling（指名 ≤2 个 change 内
   解锁的主线步）/ self-indulgence（只有实现词汇且指不出解锁什么 → 不开工，记 backlog 支线）

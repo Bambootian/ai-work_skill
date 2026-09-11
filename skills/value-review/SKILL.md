@@ -83,4 +83,6 @@ git log --diff-filter=A --format= --name-only "$retro"..HEAD -- <archive dir> | 
 | 4 | 贬值检查连续 2 份 project review 只有定性判断，未引用任何真实对照 | 无对照时，本次唯一 change 必须是「当前模型不带项目代码裸做一次同样的事」的 spike |
 | 5 | 剩余步数连续 3 次 route check 不减 | 距离项改为趋势行：上次剩 k、这次剩 j、隔 d 天 |
 | 6 | 连续 2 次 backstop 回顾都判「阻塞于同一外部事件」 | 工程复盘必须在 [pause] 与继续之间二选一，不许第三次原样等 |
-| 7 | CLAUDE.md「当前阶段重点」与 backlog Now 主线位置说法不一致 | 删「当前阶段重点」，改为指向 backlog Now |
+
+#7（CLAUDE.md「当前阶段重点」与 backlog Now 不一致）2026-09-11 在 sports 命中 1 次，用户裁定升级：
+模板不再有该行，当前阶段只在 backlog Now（v5.5）。

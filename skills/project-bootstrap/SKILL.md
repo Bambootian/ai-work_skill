@@ -1,6 +1,6 @@
 ---
 name: project-bootstrap
-description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1/v5.2/v5.3 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project's Toolkit version differing from ~/.claude/my-work-skill.toolkit-version, the project CLAUDE.md missing its North Star section, or backlog.md missing / lacking Now and 主线 sections.
+description: Use when starting a new project with this workflow (立项 / 新项目 / kick off a project), deploying or updating the toolkit's skills and hooks on a machine or in a project (部署工作流), migrating a v3/v4/v5.0/v5.1/v5.2/v5.3/v5.4 project (including slimming an oversized backlog.md, re-deploying hooks from the toolkit's hooks/ directory, refreshing OpenSpec and its config.yaml), or when Session Start finds the project's Toolkit version differing from ~/.claude/my-work-skill.toolkit-version, the project CLAUDE.md missing its North Star section, or backlog.md missing / lacking Now and 主线 sections.
 ---
 
 # Project Bootstrap
@@ -32,8 +32,8 @@ hook 的日后回补）。
 **REQUIRED SUB-SKILL: superpowers:brainstorming。** 宣布并调用，不自由采访。已有文档/
 代码先读，不问它们已回答的。必须产出（= Step 2 的槽位）：
 
-- North Star 段四要素：谁通过这个项目得到什么（一句话）+ 可观察成功判据 + anti-scope +
-  当前阶段重点
+- North Star 段三要素：谁通过这个项目得到什么（一句话）+ 可观察成功判据 + anti-scope
+  （当前阶段只写在 backlog Now，不进 North Star——两处必不一致）
 - **主线路径**：格式见 `templates/backlog.md` 主线段——从零到成功判据的有序步骤，每步标
   解锁哪条判据；外部事件（专家回信、新版本样本）也是步骤，带到期日或 kill 线
 - 规模：小型（R0/R1 为主，无 OpenSpec）vs 中型（OpenSpec）
@@ -53,8 +53,9 @@ hook 的日后回补）。
 
 无 `<placeholder>` 存活——填不出 = Step 1 没做完，回去。
 
-**存量项目迁移**（幂等；AI 起草 → 人确认后落盘）。触发：Session Start 版本比对不等，或形态
-缺失。时机：只在绿树 task 边界做，单独一个 docs commit（`chore: migrate toolkit <旧> -> <新>`），
+**存量项目迁移**（幂等；AI 起草 → 人确认。有人在场：确认后落盘；无人值守会话：可先落盘并
+单独提交，backlog Now 悬而未决记一条「迁移 commit <hash> 待确认」，人不同意就 revert——迁移只改
+文档，git 兜底）。触发：Session Start 版本比对不等，或形态缺失。时机：只在绿树 task 边界做，单独一个 docs commit（`chore: migrate toolkit <旧> -> <新>`），
 不在红迭代里迁；在途 change 的 Loop Contract 与 tasks.md 不动，Close 按新 skill 补 `Gate:` /
 `主线:` 行（兼容承诺见 GUIDE §5）。从项目 Toolkit 行的版本起，按下面各段顺序执行到当前版本
 （无 `版本:` 行 = v5.3 前立项，按形态推断起点：有 NORTH_STAR.md / PROTOCOL.md / warn-toolchain-stale
@@ -81,6 +82,8 @@ hook 的日后回补）。
 - v5.2 → v5.3：只有 Toolkit 行补 `版本:`（由上面的收尾动作完成）。
 - v5.3 → v5.4：`.claude/scripts/` 对照 `hooks/` 重部署（补 OutputEncoding、Tier 1 提示语栈无关），
   按 hooks/README 新配方重跑 echo 用例（旧配方 exit 永远 0）。
+- v5.4 → v5.5：CLAUDE.md North Star 段删「当前阶段重点」行，改为指向 backlog Now（value-review
+  观察位 #7 升级为规则）。
 
 ## Step 3 — Hooks（此时 stack 已知）
 
