@@ -235,6 +235,13 @@ zd-tool（v4.1 立项的小型项目）按 v5.5 完成迁移，回报 6 条 tool
   加载的文本里——支线写进 change-loop §2 R1「评估位」，观察位 ①② 写进 §5 Close「观察位」，命中
   即回报人并回填本条目；回报一次后由工具包侧删句。③ 已由 finance_tool / new_review_create 迁移
   部分回答：`/opsx:update` 可用，`validate --specs` 未报错（1.13.0 重生成后）。
+- **支线回报（2026-09-12，new_review_create `r10-delivery-package`，首个 R1 试跑）**：`openspec schema init lite
+  --artifacts "specs,tasks" --no-default` + `openspec new change <id> --schema lite` 一次成功（openspec 1.13.0）。
+  `validate` 起初报「Change must have at least one delta」——一次性交付 change 无 capability delta；在
+  `.openspec.yaml` 加 `skip_specs: true` 后 validate 通过、`status` 显示 `specs (skipped)` + `tasks [x]`、
+  `list` 显示任务进度。spec 正文仍写在 `spec-lite.md`（schema 的 specs 模板是 delta 格式，不适合 R1 单文件）。
+  ⇒ 结论：lite schema 可用于「进 status / list / archive」，主 spec 合并对 R1 无意义（本就无 delta）。
+  archive 是否顺畅待该 change Close 回填。
 
 ## 2026-09-11 — value-review 补强三条 + 四个自检观察位（用户裁定）
 
