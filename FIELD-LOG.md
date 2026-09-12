@@ -242,6 +242,13 @@ zd-tool（v4.1 立项的小型项目）按 v5.5 完成迁移，回报 6 条 tool
   `list` 显示任务进度。spec 正文仍写在 `spec-lite.md`（schema 的 specs 模板是 delta 格式，不适合 R1 单文件）。
   ⇒ 结论：lite schema 可用于「进 status / list / archive」，主 spec 合并对 R1 无意义（本就无 delta）。
   archive 是否顺畅待该 change Close 回填。
+  **Close 回填（2026-09-12）**：`openspec archive r10-delivery-package -y` 一次成功（`Task status: ✓ Complete`，
+  目录移入 `archive/2026-09-12-r10-delivery-package/`，spec-lite.md / tasks.md / .openspec.yaml 原样保留），
+  `validate --specs` 14 passed、`list` 无 active。R1 无 delta ⇒ 不涉及 Decisions 段与主 spec 合并，观察位 ①
+  在本 change 不适用；观察位 ②：tasks.md 的 Loop Contract 是手写的（lite schema 的 tasks 模板只有三行占位，
+  config.yaml `rules.tasks` 未注入——`openspec new change` 不生成 artifact 内容，只有 opsx propose 才会）。
+  ⇒ lite schema 对 R1 可用，建议 change-loop §2 把「评估位」改为正式做法：`.openspec.yaml` 写
+  `schema: lite` + `skip_specs: true`，spec 正文仍是 `spec-lite.md`。
 
 ## 2026-09-11 — value-review 补强三条 + 四个自检观察位（用户裁定）
 
