@@ -31,6 +31,12 @@ new_review_create（v4 立项，OpenSpec）按 v5.5 完成迁移（3 commits，�
 `openspec update` 非交互干净；先瘦身再挂 hook 的顺序对，瘦身窗口内 PostToolUse 一次没响。
 无接口变化，不升版本。
 
+**GREEN 观察（2026-09-14，new_review_create 首个 R2 change 走完 apply → Close → archive，change-loop 两处观察位回报）**
+
+- 观察位（Close 归档）：本次用 `openspec archive <id> -y` CLI 直接归档，未走 `/opsx:archive` skill——CLI 只合 delta、建主 spec；`## Architectural Decisions` 的 Source 行、Superseded 改写、`validate --specs`（不带 `--strict`）三件全是事后按 config.yaml archive guidance 手补，无一项由工具自行出现。tasks.md 头部的 Loop Contract 在本 session 接手时已存在（propose 阶段由上一 session 写入）；rules.tasks 是否自动生成，本 session 无法判定。
+- 评估位（R1 lite schema）：本 change 是 R2，未触发。
+- 顺带：单 heredoc 里含多个 `'''` 三引号块的 Python 补丁脚本在 Bash 工具下两次「unexpected EOF while looking for matching quote」；改为 Write 到 scratchpad 再 `python <file>` 稳定。归属 harness 而非工具包，记此备查。
+
 ## 2026-09-11 — finance_tool 迁移回灌（v5.5 补丁；首个 OpenSpec 项目）
 
 finance_tool（v5.0 立项，OpenSpec，12 归档）按 v5.5 完成迁移，无人值守走「先提交后确认」。
