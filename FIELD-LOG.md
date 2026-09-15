@@ -36,6 +36,8 @@ new_review_create（v4 立项，OpenSpec）按 v5.5 完成迁移（3 commits，�
 - 观察位（Close 归档）：本次用 `openspec archive <id> -y` CLI 直接归档，未走 `/opsx:archive` skill——CLI 只合 delta、建主 spec；`## Architectural Decisions` 的 Source 行、Superseded 改写、`validate --specs`（不带 `--strict`）三件全是事后按 config.yaml archive guidance 手补，无一项由工具自行出现。tasks.md 头部的 Loop Contract 在本 session 接手时已存在（propose 阶段由上一 session 写入）；rules.tasks 是否自动生成，本 session 无法判定。
 - 评估位（R1 lite schema）：本 change 是 R2，未触发。
 - 顺带：单 heredoc 里含多个 `'''` 三引号块的 Python 补丁脚本在 Bash 工具下两次「unexpected EOF while looking for matching quote」；改为 Write 到 scratchpad 再 `python <file>` 稳定。归属 harness 而非工具包，记此备查。
+- 顺带 2（2026-09-15，同项目 R1+R2 两个 change）：Bash 工具的 heredoc（含 `<<'EOF'` 引号定界符）会把内容里的 `\n` 折成真换行——`sed` 替换串与 python heredoc 补丁两次把测试文件写坏（unterminated string literal）；含反斜杠的补丁一律 Write 到 scratchpad 再执行。另：`tail -1` 结尾的管道吞掉 pytest 退出码，一次红树被 commit（已 `reset --soft` 撤回）；guarded commit 改为解析 `N passed` 且无 `failed|error` 才提交。归属 harness / 主循环纪律。
+- 顺带 3（2026-09-15）：OpenSpec 1.13 对本项目 `config.yaml` 打印「Guidance for operation 'archive' must be an array of strings, ignoring this operation's guidance」——archive guidance 三条被整体忽略（propose/archive 时可见）。模板 `templates/openspec-config.yaml` 的 archive.guidance 有含 `*Source: …*` / 反引号的长句，疑似被 YAML 解析成非字符串；未验证根因，记 toolkit 支线。
 
 ## 2026-09-11 — finance_tool 迁移回灌（v5.5 补丁；首个 OpenSpec 项目）
 
