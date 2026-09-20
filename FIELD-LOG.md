@@ -7,6 +7,18 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-20 — energy 首个纯文档项目：立项 + 第一个 R1 change 同 session DONE（v5.5，未改工具包）
+
+energy（研究项目，产物是文档不是代码）用 v5.5 立项并走完 constraints-inventory（R1）。工作流对无代码项目
+可用，唯一形态差异是 Verify = grep 结构断言 + 人工验收。观察 4 条，均为 GREEN 或项目侧处置，不改 skill：
+
+| # | 观察 | 处置 |
+|---|---|---|
+| 1 | R1 critic（清单 2、5 条）抓出 4 blocking：C locale 下 grep 按字节匹配全角标点（`：` 与 `，` 首字节同）、`<[^>]+>` 占位符断言误伤正文、S3 失败态与 Exit 矛盾、口述事实无来源标签。critic 自建 19 行样本实测五条 grep | 项目侧改 `LC_ALL=C.UTF-8` + `grep -P` + 定长格式 + 专用占位 token；沉淀知识库。证明 R1 也值得跑 critic |
+| 2 | Reviewer FAIL（2 blocking 均一行修）：「待复核」这类无主待办绕过 `待补` 断言 | 项目侧统一 token + 触发条件；断言要覆盖同义词 |
+| 3 | 「每迭代一个 task」与 subagent 后台并行：T1 五个 Sonnet 检索 subagent 并行、主会话同时写 T2，按 commit 粒度各自独立提交，无冲突 | 按 commit 粒度理解即可，skill 不改 |
+| 4 | 第一个 subagent 发现的绕法（.gov.cn 直连失败、Jina 代理可读）没有传给已在跑的其他 subagent，A2 多派一轮补核 | 派发前把已知绕法写进 prompt；dispatch-prompt 的 Context 槽可提示「同批其他 agent 已知的环境事实」——观察位，复发再改模板 |
+
 ## 2026-09-11 — new_review_create 迁移回灌（v5.5 补丁；340KB backlog、45 归档）
 
 new_review_create（v4 立项，OpenSpec）按 v5.5 完成迁移（3 commits，未 push，主线段与 Now 待人
