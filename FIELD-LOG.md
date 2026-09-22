@@ -51,6 +51,20 @@ new_review_create（v4 立项，OpenSpec）按 v5.5 完成迁移（3 commits，�
 - 顺带 2（2026-09-15，同项目 R1+R2 两个 change）：Bash 工具的 heredoc（含 `<<'EOF'` 引号定界符）会把内容里的 `\n` 折成真换行——`sed` 替换串与 python heredoc 补丁两次把测试文件写坏（unterminated string literal）；含反斜杠的补丁一律 Write 到 scratchpad 再执行。另：`tail -1` 结尾的管道吞掉 pytest 退出码，一次红树被 commit（已 `reset --soft` 撤回）；guarded commit 改为解析 `N passed` 且无 `failed|error` 才提交。归属 harness / 主循环纪律。
 - 顺带 3（2026-09-15）：OpenSpec 1.13 对本项目 `config.yaml` 打印「Guidance for operation 'archive' must be an array of strings, ignoring this operation's guidance」——archive guidance 三条被整体忽略（propose/archive 时可见）。模板 `templates/openspec-config.yaml` 的 archive.guidance 有含 `*Source: …*` / 反引号的长句，疑似被 YAML 解析成非字符串；未验证根因，记 toolkit 支线。
 
+
+**GREEN 观察补测（2026-09-22，new_review_create `n2-fourth-round-package`，同两处观察位）**
+
+- 观察位（Close 归档）：**与 09-14 同结论，第二次确认**。`openspec archive <id> -y` 输出只有
+  「Specs to update / Applying changes / ~ 1 modified / archived as …」，`## Architectural Decisions`
+  的条目与 `*Source: change `<id>` (archived <date>)*` 行**没有自行出现**，是事后按 config.yaml
+  archive guidance 手补的。`validate --specs`（不带 `--strict`）同样是手跑。⇒ 该 guidance 是给
+  agent 读的提示，CLI 侧无任何实现；观察位可以关掉，结论稳定。
+- 观察位（Loop Contract 来源）：**09-14 无法判定的那一问，本次可判定——是手写的**。本 session
+  自己走完 propose：`openspec instructions tasks --change <id> --json` 返回的 `rules` 里确实带着
+  项目 config.yaml 的 `rules.tasks`（「文件头部先写 change-loop 的 `## Loop Contract`」），但它是
+  **注入给 agent 的约束文本**，不是模板里的占位段落——`template` 字段里没有 Loop Contract 结构。
+  ⇒ rules.tasks 起作用的方式是「让 agent 记得写」，不是「自动生成」。两者在可靠性上差一个量级：
+  agent 忘了就没有，而 hook/模板忘不了。若要它必不缺，应进 templates 或 hook，不是进 rules。
 ## 2026-09-11 — finance_tool 迁移回灌（v5.5 补丁；首个 OpenSpec 项目）
 
 finance_tool（v5.0 立项，OpenSpec，12 归档）按 v5.5 完成迁移，无人值守走「先提交后确认」。
