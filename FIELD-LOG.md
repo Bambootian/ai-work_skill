@@ -7,6 +7,27 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-23 — hook 注册片段用相对路径：守卫在子目录里静默失效（v5.5，改 `hooks/README.md` 注册片段）
+
+new_review_create 的 `n2-final-edit` B 组，大量工作在 `runs/n2-01` 子目录里做。整个期间每个工具调用都刷
+`The argument '.claude/scripts/warn-backlog-size.ps1' to the -File parameter does not exist`，
+用户问「是什么问题」才查。**这是 RED：不是噪音，是安全网失效。**
+
+| # | 观察 | 处置 |
+|---|---|---|
+| 1 | **hook 的工作目录跟着工具当前 cwd 走，不是项目根。** 注册片段写的相对路径 `.claude/scripts/*.ps1`，会话一 `cd` 进子目录就解析到 `<子目录>/.claude/scripts/`（不存在）。hook 是 non-blocking 的，失败不阻断执行 → 表现为刷屏，**实际是 `warn-destructive-git` 与 `warn-backlog-size` 在子目录里全程是瞎的**。那天没触发破坏性 git 操作是运气，不是守卫拦住了 | 注册片段 6 条全部改 `powershell -NoProfile -File "$CLAUDE_PROJECT_DIR/.claude/scripts/<name>.ps1"`；根因与探针读数写进 README 正文，免得下次改回相对路径 |
+| 2 | **探针实测**（临时在 hook 命令前加一行 echo，触发后读出、随即移除）：`cwd=/e/opc_project/new_review_create/runs/n2-01  dir=[E:/opc_project/new_review_create]`。一次坐实两件事：① hook 的 cwd 确实是子目录（根因）；② `$CLAUDE_PROJECT_DIR` 由 Claude Code 在 hook 执行时注入，值用**正斜杠** | 故 `"$CLAUDE_PROJECT_DIR/.claude/..."` 在 Windows 上拼接安全，不会有反斜杠转义问题。**外层引号不可省**——项目路径含空格时会被拆成多个参数 |
+| 3 | 变量在 **Bash 工具**环境里是空的（`echo $CLAUDE_PROJECT_DIR` → 空），只在 hook 执行时注入 | 不能靠工具侧 echo 来验证，必须用探针 hook。这也是为什么「pipe-test 通过」不足以证明 hook 生效 |
+| 4 | **同一守卫的第二次失效形态。** 2026-09-11 条目「既有 1」记的是 `warn-destructive-git` 只挂 `Bash`、PowerShell 调用从未被看住（matcher 缺口）；这次是同一个守卫的**路径**缺口。两次都是静默失效、都靠人偶然发现 | 迁移通用动作 ③ 已核对 matcher，建议同时核对**路径形态**；更根本的是：non-blocking 守卫没有「我还活着」的信号，失效与从未触发在输出上无法区分——记支线，下次 v5.6 考虑给守卫加一条可验证的自检路径 |
+
+**修复与验证**：项目侧 5 条 hook 改完后 JSON 解析校验 5/5、子目录实跑不再报错（commit `e0585a3`，已 push）；
+工具包侧注册片段 6 条改完后**按「可直接粘贴的合法 JSON」解析校验**通过（`json.loads` + 逐条断言前缀
+`powershell -NoProfile -File "$CLAUDE_PROJECT_DIR/` 与后缀 `.ps1"`），commit `f6427a7`。
+无接口变化，不升版本。
+
+**顺带**：`warn-backlog-size` 当天在项目根响了四五次，每次都是收工写 Now 段即超 8KB。守卫本身工作正常，
+但若每次收工都要压一轮，可能是 Now 段预算偏紧——归项目侧，记 new_review_create 下次 route check 看。
+
 ## 2026-09-20 — energy 首个纯文档项目：立项 + 第一个 R1 change 同 session DONE（v5.5，未改工具包）
 
 energy（研究项目，产物是文档不是代码）用 v5.5 立项并走完 constraints-inventory（R1）。工作流对无代码项目
