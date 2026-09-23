@@ -39,17 +39,17 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
   "hooks": {
     "PreToolUse": [
       { "matcher": "Skill", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/block-replaced-skills.ps1" },
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/warn-route-before-opsx.ps1" } ] },
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-replaced-skills.ps1\"" },
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-route-before-opsx.ps1\"" } ] },
       { "matcher": "Write", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/block-superpowers-specs-dir.ps1" } ] },
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-superpowers-specs-dir.ps1\"" } ] },
       { "matcher": "Bash|PowerShell", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/warn-destructive-git.ps1" },
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/block-unsafe-test-commands.ps1" } ] }
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-destructive-git.ps1\"" },
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-unsafe-test-commands.ps1\"" } ] }
     ],
     "PostToolUse": [
       { "matcher": "Write|Edit|Bash|PowerShell", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File .claude/scripts/warn-backlog-size.ps1" } ] }
+        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-backlog-size.ps1\"" } ] }
     ]
   }
 }
@@ -57,6 +57,15 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
 
 命令类 matcher 必须写 `Bash|PowerShell`（2026-08-09 zd-tool 实测：Windows 会话主 shell 是
 PowerShell，只写 `Bash` 根本不触发，hook 静默失效）。
+
+脚本路径必须走 `$CLAUDE_PROJECT_DIR`，**不能写相对路径**（2026-09-23 new-review-create 实测）。
+hook 的工作目录**跟着工具当前的 cwd 走**，不是项目根：会话里一旦 `cd` 进子目录，
+`.claude/scripts/x.ps1` 就解析到 `<子目录>/.claude/scripts/`，PowerShell 报
+`The argument '...' to the -File parameter does not exist`。它是 non-blocking 的，所以表现为刷屏噪音——
+**真实后果是守卫在子目录里静默失效**：destructive-git 拦不住，backlog-size 不响，而这恰恰是干活最深、
+最需要守卫的时候。探针实测 `cwd=/e/proj/runs/n2-01 dir=[E:/opc_project/new-review-create]`：
+变量由 Claude Code 在 hook 执行时注入，值用正斜杠，故 `"$CLAUDE_PROJECT_DIR/.claude/..."` 拼接安全；
+外层引号不能省，否则含空格的项目路径会被拆成多个参数。
 
 ## Heavy-test（block-unsafe-test-commands）
 
