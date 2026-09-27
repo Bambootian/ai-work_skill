@@ -28,7 +28,15 @@ new_review_create 板块 5 第 2 步里程碑后的 route check，第一问「�
 （「change-loop 的 skill 我们不能再做加法……合理的做减法」）；反向先例：2026-09-02 zd-tool 模型自行 inline 替代 gate，才立了「没跑 = DONE-ungated」。
 尚未核的：这些 blocking 里有多少是「文档对自己描述错了」一类自指问题（09-23 H.1 的 10 条 blocking 全是这类），多少是真实缺陷——改规则前该分一次类。
 
-**状态**：RED 已记；是否改 change-loop §2 / §4 / §5 由用户裁定（new_review_create route check 09-27 之后当场问）。
+**用户裁定（09-27，选推荐项「模型判定 + 底线」）→ 修复（减法式，不加新块）**：
+- change-loop §2「Spec 自检」与 §4 gate：跑不跑、几个视角按内容判定，契约头部 `Critic:` / `Gate:` 各一行写计划与理由；给出「该跑 / 可免」的具体信号，
+  免跑理由必须指出信号，「这次简单」不算（堵 09-02 那类合理化）。
+- **底线**：动产品代码（非一次性脚本）、数据契约或 ARCHITECTURE 的 R1+ change 至少一个 fresh-context reviewer；底线没跑才降 DONE-ungated，按判定免跑不降级。
+- 增量 gate 默认免，修复引入新逻辑或新数据路径才跑。R2 的「critic 修完经人批准」改为「spec 经人批准」（critic 按判定）。GUIDE 对照表同步。
+- 无接口变化（项目 CLAUDE.md 常设授权行不用改），不升版本；已部署到 `~/.claude/skills/change-loop/`。
+
+**GREEN 观察位**：new_review_create 板块 5 第 3 步 `evidence-tools` 是新规则下第一个 change——回报 `Critic:` / `Gate:` 两行的判定与理由、
+免跑的环节事后有没有漏出问题（后续 change 或真跑发现本该由 gate 抓的缺陷 = RED）。
 
 ## 2026-09-23 — hook 注册片段用相对路径：守卫在子目录里静默失效（v5.5，改 `hooks/README.md` 注册片段）
 

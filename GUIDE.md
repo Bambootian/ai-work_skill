@@ -109,7 +109,7 @@ major + 迁移段。在途 change 跨 minor 版本安全的前提就是这张表
 |---|---|
 | backlog = capability 清单，其余内容无家 | backlog = 索引（Now / 主线 / 支线 / Done，≤8KB）+ §6 归属表 + warn-backlog-size hook |
 | 两行路由声明 | 三行：加 `主线:` 行——不在主线段 = 支线；主线段只经回顾批准增删 |
-| gate 评审派发无授权文本；inline 替代不可见 | CLAUDE.md 常设授权；Close 必填 `Gate:` 行（critic + reviewer），没跑 = DONE-ungated；R0 免 gate |
+| gate 评审派发无授权文本；inline 替代不可见 | CLAUDE.md 常设授权；Close 必填 `Gate:` 行（critic + reviewer）；跑不跑按内容判定、写理由，底线 gate（动产品代码 / 数据契约 / ARCHITECTURE 至少一个 reviewer）没跑 = DONE-ungated；R0 免 gate（2026-09-27） |
 | spec 写完直接进循环 | spec critic（fresh-context，分级）→ 修 blocking → R2+ 人批准 |
 | value-review = 逐 change 三分类，5 archive / 4 周 | route check（主线快照 / 偏离 / 距离）+ project review（判据 / 死胡同 / 贬值）；主线里程碑 / 支线计数 / 4 周 backstop / 板块 / 8 周 / 模型换代；检查点在下一个 change 路由前 |
 | 5 hooks，Tier 2 = exit 0 + stdout | 6 hooks（+ warn-backlog-size）；JSON additionalContext / exit 2 + stderr；stdin UTF-8 |

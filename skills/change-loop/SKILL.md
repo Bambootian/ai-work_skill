@@ -27,7 +27,7 @@ Next: <brainstorm | SPEC-lite | opsx propose | test>
   开工前一句说明 verify 命令与期望，commit 前展示输出。R0 免 gate、不写 backlog、不计数。
 - **R1 轻量**：意图 2–3 句说得清、单 capability、无新架构决策/外部依赖 → SPEC-lite。
 - **R2 标准**：新 capability、跨模块、或新外部依赖 → OpenSpec propose 四件套；
-  spec critic 修完后经人批准进循环。
+  spec（critic 按下文「Spec 自检」判定）经人批准进循环。
 - **R3 架构**：动 ARCHITECTURE 决策、数据契约或 North Star 边界 → 先与人定方向再走 R2。
 
 三条规则：**没读过要动的代码不路由**——爆炸半径在代码里，先只读 explore 再声明；对既有
@@ -42,7 +42,7 @@ Next: <brainstorm | SPEC-lite | opsx propose | test>
 - Outcome: <一句用户可见词汇——用户得到什么>
 - Verify: <具名命令 + 期望输出。"测试通过"四个字无效>
 - Budget: <max 天数>；每 task 最多 5 次迭代
-- Exit: DONE（Verify 全绿 + Outcome 落地；gate 未由 fresh-context 跑 → DONE-ungated）
+- Exit: DONE（Verify 全绿 + Outcome 落地；底线 gate（§4）没跑 → DONE-ungated）
       | BLOCKED（blockers 附后，升级给人）| SPLIT（超预算或发现复合任务 → 提拆分方案）
 ```
 
@@ -59,11 +59,14 @@ R1 SPEC-lite（Goal/Non-goals/Scenarios/Loop Contract 单文件）位置：OpenS
 建本 change——status / validate / archive 能跑通就用它，跑不通照旧 spec-lite.md；两种结果都在路由
 声明后一行回报人，并追加到 toolkit FIELD-LOG 2026-09-11 v5.2 条目的支线（路径见 CLAUDE.md Toolkit 行）。
 
-**Spec 自检（成文后、进循环前）**：派 fresh-context spec critic（dispatch-prompt.md
-「Spec critic」变体）——R1 一个（只做清单第 2、5 条）/ R2 critic + 「假设对照代码」视角分开派 /
-R3 再加 skeptic。顺序：critic → 修 [blocking] → R2+ 把 critic 冲突项与「最不放心的 3 处」
-并列交人批准 → 进循环。critic 派不出去 → 契约头部记 `Critic: 未跑（原因）`。发现 ≠ 新
-change：范围内改 spec，超范围进 backlog 支线一行。
+**Spec 自检（成文后、进循环前）**：跑不跑、派几个视角按内容判定，契约头部写一行
+`Critic: <视角 | 免> — <理由>`。工具是 fresh-context spec critic（dispatch-prompt.md「Spec critic」
+变体），视角可选：清单全项或只做第 2、5 条 /「假设对照代码」/ skeptic。**该跑的信号**：新数据契约
+或架构决策、预登记口径（跑完不能改）、要花真钱真跑、设计未经人逐项过目；**可免的信号**：设计
+刚经人逐项批准且无新机制、只动文档或产物整理。免跑理由必须指出具体信号，「这次简单」不算。
+跑了：critic → 修 [blocking] → R2+ 把 critic 冲突项与「最不放心的 3 处」并列交人批准 → 进循环。
+判定要跑却派不出去 → 记 `Critic: 未跑（原因）`。发现 ≠ 新 change：范围内改 spec，超范围进
+backlog 支线一行。
 
 ## 3. 内环（自治）
 
@@ -90,20 +93,24 @@ subagent 看不到你的任何上下文：项目硬规则、测试命令纪律�
 高噪音工作（全量测试日志、构建考古）隔离到 subagent，只回 ≤2k token 摘要。
 
 派 reviewer / critic / 隔离 subagent 是**常设授权**（项目 CLAUDE.md Hard Rules）——不请示、
-不等批准；harness 对多 agent 编排（Workflow）的 opt-in 不适用于单个 subagent。派不出去 →
-报原因、标 ungated；**不在本会话 inline 替代：R1+ 的 gate 定义是 fresh-context，inline 自检不是 gate。**
+不等批准；harness 对多 agent 编排（Workflow）的 opt-in 不适用于单个 subagent。判定要跑却
+派不出去 → 报原因、标 ungated；**不在本会话 inline 替代：gate 的定义是 fresh-context，inline 自检不是 gate。**
 
-gate 评审用 fresh-context reviewer（只给 diff + spec + 标准，不给产生代码的推理过程），
-按路由分级：R0 免 gate（自审 diff）/ R1 单 reviewer / R2 双视角（spec 合规 + 代码质量）/
-R3 三视角（+ skeptic）+ 人。发现分诊：[blocking] = 违反 spec/契约，或真实缺陷
+gate 评审用 fresh-context reviewer（只给 diff + spec + 标准，不给产生代码的推理过程）。
+跑不跑、几个视角按内容判定（2026-09-27 起，原为按路由固定），契约头部 `Critic:` 下一行写
+`Gate: <视角 | 免> — <理由>`，Close 如实回报。视角参考：spec 合规 / 代码质量 / skeptic；R3 仍 + 人。
+**底线**：动产品代码（非一次性脚本）、数据契约或 ARCHITECTURE 的 R1+ change，至少一个
+fresh-context reviewer。R0 免 gate（自审 diff）。增量 gate（修完 blocking 再审）默认免，修复引入
+新逻辑或新数据路径才跑。免跑理由同 Spec 自检：指出具体信号（只动测量脚本 / 文档 / 产物、Verify
+已独立复算全部数字、设计刚经人逐项批准等），「这次简单」不算。发现分诊：[blocking] = 违反 spec/契约，或真实缺陷
 （正确性/资源泄漏/数据丢失/安全）——必修；[nit] = 风格与「可以更好」——记录不追。
 
 ## 5. Close（证据 gate，R1+）
 
 - 每条 Verify 命令的真实输出粘贴（不概述、不「应该过」）。
 - Outcome 一行：用户可见的东西落地了吗。
-- `Gate: critic 跑了（n）| 没跑（原因）；reviewer 跑了（n / 视角）| 没跑（原因）`——任一没跑，
-  出口态只能写 **DONE-ungated**。
+- `Gate: critic 跑了（n / 视角）| 免（理由）| 没跑（原因）；reviewer 同`——底线 gate（§4）没跑，
+  出口态只能写 **DONE-ungated**；按判定免跑的不降级，理由就写在这一行给人看。
 - `主线: 推进第 N 步 | 第 N 步前置 | 支线（原因）`——与路由声明一致，改了要说明。
 - 出口态声明：DONE / DONE-ungated / BLOCKED / SPLIT；跳过或合并的环节（如 `/opsx:verify`
   工件核查、code-simplifier polish，皆为 judgment call）明说并给理由。
