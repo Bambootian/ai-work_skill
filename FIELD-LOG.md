@@ -7,6 +7,29 @@
 > GREEN 观察项登记在对应条目的 ablation 台账中。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-09-27 — critic / gate 按路由固定必跑，用户嫌机械（v5.5，RED，未改 skill）
+
+new_review_create 板块 5 第 2 步里程碑后的 route check，第一问「最不满意」的回答。
+**用户原话**：「2和3吧，感觉目前的流程和gate比较机械化，就是无论内容都默认必走critic/gate，这里的执行我认为可能更需智能一些，比如模型直接帮我判断是否需要走」
+
+**本期读数（09-24→09-27，6 个 change，R1 ×4 / R3 ×2）**——每次 critic / reviewer 都返回了 blocking：
+
+| change | 路由 | spec critic | gate reviewer |
+|---|---|---|---|
+| support-verification-spike | R1 | 1 个：6 blocking + 8 nit | 1 个：4 blocking + 11 nit |
+| judge-calibration-spike | R1 | 1 个：5 + 9 | 1 个：3 + 7 |
+| n2-fixlist-judging | R1 | 1 个：4 + 8 | 1 个：1 + 7 |
+| n2-edited-fix | R1 | 1 个：B1–B7 | 1 个：5 + 8 |
+| verify-docx | R3 | 3 视角 | 3 视角，blocking 全修 |
+| verify-judge | R3 | 3 视角 | 10.2 三视角 7 / 10 / 11+2；10.3 增量两视角 0 / 1 |
+
+**张力**：读数不支持「gate 空转」——几乎每次都有 blocking；但用户的抱怨是**规则不看内容**：R1 必派 1 critic + 1 reviewer、R3 必派 3+3，
+增量 gate 也照跑，模型没有「这次不值得」的出口。先例同形：2026-07-09 用户把 Verify / Polish 从必走改为判断项
+（「change-loop 的 skill 我们不能再做加法……合理的做减法」）；反向先例：2026-09-02 zd-tool 模型自行 inline 替代 gate，才立了「没跑 = DONE-ungated」。
+尚未核的：这些 blocking 里有多少是「文档对自己描述错了」一类自指问题（09-23 H.1 的 10 条 blocking 全是这类），多少是真实缺陷——改规则前该分一次类。
+
+**状态**：RED 已记；是否改 change-loop §2 / §4 / §5 由用户裁定（new_review_create route check 09-27 之后当场问）。
+
 ## 2026-09-23 — hook 注册片段用相对路径：守卫在子目录里静默失效（v5.5，改 `hooks/README.md` 注册片段）
 
 new_review_create 的 `n2-final-edit` B 组，大量工作在 `runs/n2-01` 子目录里做。整个期间每个工具调用都刷
