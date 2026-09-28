@@ -38,6 +38,21 @@ new_review_create 板块 5 第 2 步里程碑后的 route check，第一问「�
 **GREEN 观察位**：new_review_create 板块 5 第 3 步 `evidence-tools` 是新规则下第一个 change——回报 `Critic:` / `Gate:` 两行的判定与理由、
 免跑的环节事后有没有漏出问题（后续 change 或真跑发现本该由 gate 抓的缺陷 = RED）。
 
+**GREEN 观察（new_review_create `corpus-core`，09-27 → 09-28，新规则下第一个 change，R3）**：
+- 写下的计划与理由：
+  - `Critic: spec critic + 假设对照代码 — 新数据契约、新架构决策；免 skeptic：无预登记 / 盲测口径`；
+  - `Gate: spec 合规 + 代码质量 — 动产品代码、数据契约、ARCHITECTURE，落在底线内；增量 gate 默认免，修复引入新逻辑才跑`。
+- 实际运行与收获：
+  - critic 两视角共 13 blocking。其中三条若漏过会让真跑证据失真：Crossref 字段漏进 verify 报告、打开 Chroma 就会写文件、PowerShell 置空变量等于删除；
+  - gate 两视角合并 6 blocking，其中 CLI 在库错误、HTTP 错误、值错误下打印 traceback；
+  - 按「修复引入新逻辑」判跑了一轮增量 gate，再抓到 1 条（voyageai 的其他 4xx、PDF 被占用时的 `PermissionError` 仍会打印 traceback）；
+  - round 2 只收窄输入和错误边界，判定免第三轮。
+- 读数的含义：
+  - 按规则判定之后跑的轮次，没有一轮是空转的；
+  - 「按内容判定」这次落在了「跑」一侧，因为信号都在：新数据契约、R3、真钱真跑。
+  - 真正的减法出现在：免 skeptic、免第三轮 gate、免 `/opsx:verify` 与 code-simplifier，理由都写进了 Close。
+- 待下一个 R1 小 change 看「免」一侧会不会漏出问题，再判 GREEN 是否成立。
+
 ## 2026-09-23 — hook 注册片段用相对路径：守卫在子目录里静默失效（v5.5，改 `hooks/README.md` 注册片段）
 
 new_review_create 的 `n2-final-edit` B 组，大量工作在 `runs/n2-01` 子目录里做。整个期间每个工具调用都刷
