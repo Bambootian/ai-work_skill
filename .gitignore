@@ -1,2 +1,5 @@
 # Local harness runtime state — never commit
 .claude/
+
+# Raw evidence copied from private projects (repo is public) - local only
+docs/evidence/**/raw/
