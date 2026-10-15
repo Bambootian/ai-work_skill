@@ -3,7 +3,7 @@
 > v5 = v4 的契约内核 + 面向 2026 frontier class 模型（能力下限 Opus 5）的减法重构。
 > v5.1 主线锚定；v5.2 WORKFLOW.md 退役、对齐 OpenSpec 1.13；v5.3 版本戳；v5.4 / v5.5 迁移回灌与用户裁定。
 > **v6.0 = 船长模型**：人只定方向、钱、时间、找谁；AI 决定其余并在里程碑汇总里给人否决；方向层
-> fresh-context 反方；热存储有上限、条目到期；过程约束减法。设计契约：
+> fresh-context 反方；热存储有上限、条目到期；过程约束减法。v6.1 = superpowers 退役、随时可说主线错了。设计契约：
 > `docs/specs/2026-08-14-v5-subtraction-design.md`、`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`、
 > `docs/specs/2026-10-15-v6-captain-model-design.md`（证据与反方并排记录在 `docs/evidence/2026-10-14-workflow-review/`）。
 
@@ -71,6 +71,7 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 | 自定义 reviewer agent（.claude/agents） | 暂缓 | 常设授权文本先试；「拒派」复发再装只读 reviewer agent（ablation 台账） |
 | 多 change 并行调度 | 待琢磨 | 用户 2026-10-14 裁定要做但不急；冲突类型表在 FIELD-LOG 同日条；先只做等待期只读 / 隔离写 |
 | 至少两个反方取交集 | 拒 | 回测：单个反方 8/8，两个同家族反方 2/5、3/5 且一致地指错——一致性不是正确性过滤器；默认 1 个，第二个按内容判定 |
+| superpowers 插件（brainstorming / TDD / debugging / writing-plans…） | 退役（v6.1） | 只剩 brainstorming 在用，顶尖模型不需要 skill 才会讨论；SessionStart 法条式注入（「你没有选择」）正是官方说会压低输出的写法；挡它的两个 hook 一起退役 |
 
 ## 4. 工具链排查要点
 
@@ -100,7 +101,7 @@ major + 迁移段。在途 change 跨版本安全的前提就是这张表：状�
 | Loop Contract | Outcome / Verify / Budget / Exit 四字段 + 可选 `Decided:` |
 | 路由与收尾 | Route / 主线 两行；Close 的 `Gate:` 行 |
 | 回顾产物 | `retros/<date>-milestone.md`（≤40 行）/ `retros/<date>-project-review.md` |
-| hooks | `hooks/` 清单、脚本名、matcher（v6 只改 warn-route-before-opsx 文案） |
+| hooks | `hooks/` 清单、脚本名、matcher（v6.0 只改 warn-route-before-opsx 文案；v6.1 退役两个 superpowers 守卫——清单只减、旧注册留着无害，按 minor 处理，这是「删 = major」的例外） |
 | openspec/config.yaml | schema / context / rules.<artifact> / operations.apply\|archive.guidance（每项为引号字符串） |
 | 版本戳 | `VERSION` = tag；项目 Toolkit 行 `版本:`；机器 `~/.claude/my-work-skill.toolkit-version` |
 
@@ -119,6 +120,10 @@ major + 迁移段。在途 change 跨版本安全的前提就是这张表：状�
 | 等待外部事件 = 停 | 等待期做只读 / 隔离写的活，进下次汇总 |
 | skill 正文带「回报一次后删除」的槽位 | skill 正文不放观察位；GREEN 观察只记 FIELD-LOG 并带到期日 |
 | openspec-config 的 guidance 复述一 task 一迭代 / Errata，且长句被 OpenSpec 忽略 | 只复述契约条目，每项双引号字符串 |
+
+**v6.0 → v6.1**（2026-10-15，用户裁定）：superpowers 插件退役，立项 brainstorm 改为对话（只问属于人的题，打包一次问完）；
+hooks 6 → 4（退役 block-replaced-skills、block-superpowers-specs-dir）；change-loop 与 value-review 加「任何时候觉得主线错了，
+当场一行说出来，不必等回顾」——v6.0 只允许在汇总里提，是工具包自己造的新锁。
 
 **v4 → v5**
 

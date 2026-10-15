@@ -7,6 +7,49 @@
 > GREEN 观察项登记在对应条目里并带到期日，到期未回填即作废；skill 正文不放观察位（2026-10-15 起）。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
 
+## 2026-10-15 — v6.1 superpowers 退役、两个守卫 hook 退役、「随时可说主线错了」（用户裁定，minor）
+
+**用户裁定（2026-10-15 第二轮，针对根子 C「锁死的天才」）**：① superpowers 可以卸载——「superpowers 的能力我现在只用 brainstorming 这一个，
+顶尖模型不需要一个 skill 才会开会讨论」，半年前的产物；连带挡它的两个 hook 退役。② v6.0 只允许 AI 在汇总里提「主线错了」是工具包自己造的
+新锁，释放：任何时候当场一行说出来，不必等回顾；「不要给自己设计新锁」。③ 第三把锁的方向：主 spec 是契约记忆要守住；OpenSpec 四件套
+「目前确实也只能证明写下契约让 fresh-context critic 能打有价值，但证明不了四个文件比一页说明简洁清晰的纸或者流程编排图更好」，
+「绝非当前时代的最优解」；要像跳出 superpowers 那样思考跳出 OpenSpec 的形态限制，设计自己的 change 形态——进入设计，另起条目。
+用户同时确认「少仪式、少既定前提，留契约和红线」对 Opus 5.5 同样成立。
+
+**RED**：superpowers 的 SessionStart 注入 using-superpowers（「只要有 1% 可能就必须调用」「你没有选择」「这些念头都是在找借口」），
+正是《Prompting Claude Fable 5》点名会压低输出的 prescriptive 写法；用户全局 CLAUDE.md 已花五行让渡其 gate；工具包用两个 Tier 1 hook
+挡它的两个 skill；v6.0 已把 brainstorm 收窄到立项与方向态、切除 TDD 顺序——插件剩余价值接近零，成本是每个 session 先戴一副「服从」的眼镜。
+
+**修复（v6.1）**：`hooks/` 删 `block-replaced-skills.ps1`、`block-superpowers-specs-dir.ps1`，README 清单 / 注册片段 / echo 表同步（6 → 4）；
+`templates/CLAUDE.md` Enforcement 行去「block 类」；bootstrap Step 0 去 superpowers 前置、Step 1「REQUIRED SUB-SKILL: superpowers:brainstorming」
+改为「立项 brainstorm 是一场对话，只问属于人的题，打包一次问完」、Step 3 清单 4 个、迁移段加 v6.0 → v6.1（注销两个 hook、删脚本、Toolkit 行 v6.1）；
+change-loop §1 与 value-review 共同规则各加一句「任何时候觉得当前步在白做或主线错了，当场一行说出来，不必等回顾」；GUIDE §3 加 superpowers
+退役行、§5 hooks 接口行注明例外（清单只减、旧注册无害，按 minor）、v6.0 → v6.1 一段；README 版本表；VERSION v6.1。机器级：卸载 superpowers 插件。
+
+**Ablation 台账**
+
+| 切除项 | 守护的失败模式 | 复发信号 | 回装方式 |
+|---|---|---|---|
+| hook block-replaced-skills | writing-plans / executing-plans 抢走路由与内环 | 插件被重装且这两个 skill 被调用 | 回装 hook |
+| hook block-superpowers-specs-dir | brainstorming 把 spec 写进 docs/superpowers/specs/ | 同上 | 回装 hook |
+| 立项依赖 superpowers:brainstorming | 自由采访漏问要素 | 新项目立项的 North Star 三要素缺项或主线路径写不出 | 回装 skill 依赖（或写进 bootstrap 一张问题清单） |
+
+**验证与 GREEN 观察（到期 2026-11-30）**：见本条目末「验证补记」。GREEN：下一个新项目立项是否一次写齐 North Star 三要素与主线路径；
+任何 session 再调用 superpowers:*（应为 0）；AI 在两次汇总之间有没有当场提过「主线错了」（有即说明锁确实松了，内容进汇总 ④）。
+
+**验证补记（2026-10-15）**
+- hooks/README 注册片段按 JSON 解析：4 条命令（warn-route-before-opsx / warn-destructive-git / block-unsafe-test-commands / warn-backlog-size）。
+- grep：skills / templates / hooks 对 superpowers、block-replaced、block-superpowers 的引用只剩 bootstrap 两处（前置说明、v6.0 → v6.1 迁移段），
+  均为「已退役」语义。
+- 尺寸：change-loop 9,346、value-review 6,881、bootstrap 11,671、模板 CLAUDE.md 2,604（较 v6.0 各 +0.1–0.3KB：那一句与迁移段）。
+- 部署：`~/.claude/skills` 三目录 `diff -rq` identical；标记文件 v6.1。
+- 机器级：`claude plugin uninstall superpowers@claude-plugins-official` → 「Successfully uninstalled plugin: superpowers (scope: user)」，
+  `claude plugin list` 不再出现（实际装的是 claude-plugins-official 源的 6.3.0，不是旧 bootstrap 文字写的 obra marketplace）。
+  本会话已注入的 using-superpowers 文本到会话结束才消失。
+- new_review_create：settings.json 注销两个 hook（剩 route / destructive-git / backlog-size 三条），删两个脚本，Toolkit 行 v6.1，commit `38cbd51`（未 push）。
+- 顺带：用户全局 CLAUDE.md 仍有五行让渡 superpowers gate 的文字，现在指向已卸载的插件；是否删由用户定——其中「R0 直接做」
+  「就在当前分支做」「要问就打包一次问完」是独立偏好，仍有效。
+
 ## 2026-10-15 — v6.0 船长模型：人机分工翻转、里程碑汇总、方向反方、热存储到期、过程约束减法（major）
 
 **RED**：下方 2026-10-14 条及其完整记录 `docs/evidence/2026-10-14-workflow-review/README.md`（四个根子、八条拍定、撤回表）。

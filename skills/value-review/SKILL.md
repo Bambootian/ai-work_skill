@@ -60,6 +60,7 @@ description: Use before routing the next change when any of these hold - a mainl
 - **最多提 1 个新 change，且必须在主线上**；其余发现进 backlog 支线一行（带触发条件）。
 - **回顾只读**：用已有归档 / 读数 / 命令输出；需要新实验 → 那就是它提的那一个 change，或等待期的只读探针。
 - 板块、其终态与判据、主线段增删 → 交人（汇总 ⑥），批准前零落地；板块内步骤拆分由你做，列入 ②。
+  觉得主线错了不必等汇总：任何 change 里当场一行提出。
 - 技术与领域题不问人：你定，记 `Decided:`，判错由真跑暴露。
 - 判决书不是日志：证据用路径指，不粘贴；工具包的流程问题只进 ⑦。首轮 backlog 无主线段 → 停，先跑
   project-bootstrap 迁移写出主线段交人确认。

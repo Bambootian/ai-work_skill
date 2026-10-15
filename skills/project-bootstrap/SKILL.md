@@ -21,18 +21,18 @@ AI 执行、人定方向：人只回答属于人的 brainstorm 问题（谁 / �
    skill 副本一律删除，只留用户级一份。复制完把 `<toolkit>/VERSION` 写入
    `~/.claude/my-work-skill.toolkit-version`——机器上部署的是哪版的唯一记录。**这一步在任何项目里跑都会
    升级机器级 skill，其他项目下次 Session Start 会因版本不等被要求迁移——这是设计，不是事故。**
-3. 前置：superpowers 插件在（立项 brainstorm 依赖它）；缺 → `/plugin marketplace add
-   obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace` → `/plugin list`
-   确认。中型项目：全局 OpenSpec CLI 跟上最新（`openspec --version` 与 `npx @fission-ai/openspec@latest
+3. 前置（中型项目）：全局 OpenSpec CLI 跟上最新（`openspec --version` 与 `npx @fission-ai/openspec@latest
    --version` 不等则 `npm i -g @fission-ai/openspec@latest`，Node ≥ 20.19）；profile 非交互只能直接编辑
    `openspec config path` 指向的 config.json 的 `workflows`（期望 core 六个 + verify）——机器级。
+   superpowers 插件不再是前置（v6.1 退役：其 SessionStart 法条式注入会压低输出，建议卸载）。
 
 机器已是最新（路径文件在、skills 与 toolkit 一致、无死目录、标记文件 = VERSION）→ 一行说明，继续。
 
 ## Step 1 — 立项 brainstorm
 
-**REQUIRED SUB-SKILL: superpowers:brainstorming。** 宣布并调用，不自由采访。已有文档 / 代码先读，
-不问它们已回答的；stack 与命令自己读仓库，不问人。必须产出（= Step 2 的槽位）：
+立项 brainstorm 是一场对话，不是 skill：已有文档 / 代码先读，不问它们已回答的；stack 与命令自己读
+仓库；只问属于人的题（谁 / 得到什么 / 判据 / anti-scope / 钱与时间线 / 找谁），打包一次问完，不一问一答。
+必须产出（= Step 2 的槽位）：
 
 - North Star 段三要素：谁通过这个项目得到什么（一句话）+ 可观察成功判据 + anti-scope
   （当前阶段只写在 backlog Now，不进 North Star——两处必不一致）
@@ -69,7 +69,7 @@ CLAUDE.md / backlog / 注释直接改，living spec 里的记支线；③ 项目
 
 - **版本 < v5.5**：按 GUIDE §5「历史迁移步骤（v3 → v5.5）」逐段先迁到 v5.5。
 - **v5.5 → v6.0**。分批裁定（2026-10-15，到期 = new_review_create 的首份 v6 里程碑汇总）：
-  new_review_create 先迁；其余项目在此之前 Session Start 比对不等时只报一行「v6.0 待迁（分批裁定）」
+  new_review_create 先迁；其余项目在此之前 Session Start 比对不等时只报一行「v6.x 待迁（分批裁定）」
   并照常继续，不迁（过渡期以 v6 skill + 旧 CLAUDE.md 运行，旧 Hard Rules 仍生效；到期后由工具包删本条并
   重部署，或人在该项目里说「迁」即迁）。步骤：
   ① CLAUDE.md：Hard Rules 对照 `templates/CLAUDE.md` 替换（删「语义模糊停下问」「外部库 / API 先
@@ -89,19 +89,21 @@ CLAUDE.md / backlog / 注释直接改，living spec 里的记支线；③ 项目
   ⑤ hooks：重部署 `warn-route-before-opsx.ps1` 并跑 echo 用例（其余脚本不变）。
   ⑥ finance_tool 特例：先了结 Now 里「v5.5 迁移 commit 待确认」。
   ⑦ Toolkit 行改 v6.0。
+- **v6.0 → v6.1**：settings.json 注销 `block-replaced-skills` 与 `block-superpowers-specs-dir`（Skill matcher
+  只留 warn-route-before-opsx，Write matcher 整块删），删 `.claude/scripts/` 里的两个脚本（留着也无害，只是
+  指向已卸载的插件）；Toolkit 行改 v6.1。v5.5 的项目把上一段与本段一起做。
 
 ## Step 3 — Hooks（此时 stack 已知）
 
-源码：toolkit `hooks/`（6 个脚本 + README：原则、settings.json 注册片段、heavy-test Day-1 四问、echo
+源码：toolkit `hooks/`（4 个脚本 + README：原则、settings.json 注册片段、heavy-test Day-1 四问、echo
 用例表）。复制到 `.claude/scripts/` + 注册进 `.claude/settings.json`，**MERGE 不覆盖**（别的工具也在
 里面注册 hooks：先读、再加、再验 JSON）。写法法则（可见性：JSON `additionalContext` 或 exit 2 + stderr；
 编码：脚本 ASCII、stdin / stdout / stderr 都 UTF-8、坏 JSON exit 1）`hooks/` 已满足，原样复制。
 
-部署清单（6 个）：`block-unsafe-test-commands`（heavy-test）走 hooks/README 的 Day-1 四问填三个占位符
+部署清单（4 个）：`block-unsafe-test-commands`（heavy-test）走 hooks/README 的 Day-1 四问填三个占位符
 并去掉 `-TEMPLATE`——「暂无重测试」与「裸命令已由配置默认安全」都是合法答案，落点 CLAUDE.md Stack
-一行 + backlog 支线一行，之后不重问；`block-replaced-skills`、`block-superpowers-specs-dir`（Tier 1）；
-`warn-destructive-git`、`warn-route-before-opsx`（Tier 2）；`warn-backlog-size`（`PostToolUse`，matcher
-`Write|Edit|Bash|PowerShell`）。测试命令纪律同时写进 CLAUDE.md Stack 与 `openspec/config.yaml` context。
+一行 + backlog 支线一行，之后不重问；`warn-destructive-git`、`warn-route-before-opsx`（Tier 2）；
+`warn-backlog-size`（`PostToolUse`，matcher `Write|Edit|Bash|PowerShell`）。测试命令纪律同时写进 CLAUDE.md Stack 与 `openspec/config.yaml` context。
 
 每个部署的脚本跑 hooks/README 用例表里的 echo 用例并粘贴输出——**没 echo 测过的 hook 不算部署**。
 配方照 hooks/README「Echo 用例」：在独立隐藏控制台里跑、读 `$p.ExitCode`、in.json 无 BOM UTF-8 含中文。

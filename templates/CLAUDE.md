@@ -36,5 +36,5 @@ change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 
   的 opt-in 不适用于单个 subagent）——不请示；派不出去 → 报原因、标 ungated，不在本会话 inline 替代
 
 ## Enforcement
-hooks 见 .claude/settings.json（heavy-test / destructive-git / block 类 / route-before-opsx /
-backlog-size，由 project-bootstrap 部署）
+hooks 见 .claude/settings.json（heavy-test / destructive-git / route-before-opsx / backlog-size，
+由 project-bootstrap 部署）

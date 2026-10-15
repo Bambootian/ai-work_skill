@@ -23,14 +23,13 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
 
 | 脚本 | 事件 / matcher | Tier | 行为 |
 |---|---|---|---|
-| `block-replaced-skills.ps1` | PreToolUse / `Skill` | 1 | 阻断 writing-plans / executing-plans（change-loop 路由与内环替代；OpenSpec 项目对应 propose / apply）|
-| `block-superpowers-specs-dir.ps1` | PreToolUse / `Write` | 1 | 阻断写入 `docs/superpowers/specs/`（spec 位置由 change-loop 决定：openspec/changes/ 或根 SPEC.md） |
 | `block-unsafe-test-commands-TEMPLATE.ps1` | PreToolUse / `Bash\|PowerShell` | 1 | 阻断裸跑测试命令（无 filter、无 escape var）；填空后去掉 `-TEMPLATE` |
 | `warn-destructive-git.ps1` | PreToolUse / `Bash\|PowerShell` | 2 | `reset --hard` / `push -f` / `checkout .` / `restore .` / `clean -f` / `branch -D` 提醒 |
 | `warn-route-before-opsx.ps1` | PreToolUse / `Skill` | 2 | `opsx:propose\|new\|ff` 前提醒先做 change-loop 路由声明 |
 | `warn-backlog-size.ps1` | PostToolUse / `Write\|Edit\|Bash\|PowerShell` | 2 | backlog.md > 8KB → exit 2 提醒搬内容 |
 
-`warn-apply-phase`（v3）已在 v5 切除（FIELD-LOG 2026-08-14 ablation 台账）。
+`warn-apply-phase`（v3）已在 v5 切除（FIELD-LOG 2026-08-14 ablation 台账）；`block-replaced-skills`、
+`block-superpowers-specs-dir` 随 superpowers 插件退役于 v6.1（FIELD-LOG 2026-10-15）——旧项目里的注册留着无害。
 
 ## 注册（`.claude/settings.json`，MERGE 不覆盖）
 
@@ -39,10 +38,7 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
   "hooks": {
     "PreToolUse": [
       { "matcher": "Skill", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-replaced-skills.ps1\"" },
         { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-route-before-opsx.ps1\"" } ] },
-      { "matcher": "Write", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-superpowers-specs-dir.ps1\"" } ] },
       { "matcher": "Bash|PowerShell", "hooks": [
         { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-destructive-git.ps1\"" },
         { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-unsafe-test-commands.ps1\"" } ] }
@@ -125,10 +121,6 @@ $p = Start-Process -FilePath cmd -ArgumentList '/c', "chcp 936 >nul & powershell
 
 | hook | 输入 | 期望 |
 |---|---|---|
-| block-replaced-skills | `{"tool_input":{"skill":"superpowers:writing-plans"}}` | stderr BLOCKED，exit 2 |
-| | `{"tool_input":{"skill":"change-loop"}}` | 静默，exit 0 |
-| block-superpowers-specs-dir | `{"tool_input":{"file_path":"E:\\p\\docs\\superpowers\\specs\\x.md"}}` | stderr BLOCKED，exit 2 |
-| | `{"tool_input":{"file_path":"E:\\p\\openspec\\changes\\x\\design.md"}}` | 静默，exit 0 |
 | warn-destructive-git | `{"tool_input":{"command":"git reset --hard HEAD~1"}}` | 一行 JSON additionalContext，exit 0 |
 | | `{"tool_input":{"command":"git status"}}` | 静默，exit 0 |
 | warn-route-before-opsx | `{"tool_input":{"skill":"opsx:propose"}}` | 一行 JSON，exit 0 |

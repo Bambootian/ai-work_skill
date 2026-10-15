@@ -56,6 +56,7 @@ my-work-skill/
 
 | tag | 日期 | 内容 |
 |---|---|---|
+| v6.1 | 2026-10-15 | superpowers 插件退役（立项 brainstorm 改为对话）；hooks 6→4（退役两个 superpowers 守卫，旧注册无害）；change-loop / value-review 加「随时可说主线错了，不必等回顾」 |
 | v6.0 | 2026-10-15 | 船长模型（major）：问人只有四类、R2 不再人批、AI 决定记 `Decided:`；里程碑汇总取代 route check；fresh-context 方向反方；decisions 只收人裁定、watch 到期删行；change-loop 切除十余处过程约束；Hard Rules 9→7；路由两行、Now 三字段；bootstrap 带 v5.5→v6.0 迁移段（分批：new_review_create 先） |
 | v5.5 | 2026-09-11 | 无人值守迁移可先提交后确认；North Star 删「当前阶段重点」，当前阶段只在 backlog Now（观察位 #7 升级） |
 | v5.4 | 2026-09-11 | sports 首次迁移回灌：echo 配方改读 `$LASTEXITCODE` 并恢复代码页，hook 输出 UTF-8，Tier 1 提示语栈无关，迁移起点按形态推断 |
