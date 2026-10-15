@@ -8,7 +8,7 @@
 try { $json = [Console]::In.ReadToEnd() | ConvertFrom-Json -ErrorAction Stop }
 catch { [Console]::Error.WriteLine('warn-route-before-opsx: bad stdin JSON'); exit 1 }
 if ($json.tool_input.skill -cmatch '^opsx:(propose|new|ff)$') {
-  $msg = "This project requires a change-loop route declaration (Route / mainline / Next lines) before $($json.tool_input.skill). If none was posted this session, stop and invoke change-loop first."
+  $msg = "This project requires a change-loop route declaration (Route / mainline lines) before $($json.tool_input.skill). If none was posted this session, stop and invoke change-loop first."
   @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; additionalContext = $msg } } | ConvertTo-Json -Compress
 }
 exit 0
