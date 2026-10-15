@@ -1,10 +1,11 @@
 # my-work-skill
 
-AI 工程开发工作流 v5.5：契约内核 + 主线锚定 + 2026 frontier class 模型适配（能力下限 Opus 5），
-对齐 OpenSpec 1.13。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
-`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）；v5.2（WORKFLOW.md 退役）与
-v5.3（版本戳）、v5.4（首次迁移回灌）、v5.5（迁移确认时机、North Star 收窄）无独立 spec，记录见
-`FIELD-LOG.md` 2026-09-11。
+AI 工程开发工作流 v6.0：契约内核 + 主线锚定 + 船长模型（人只定方向 / 钱 / 时间 / 找谁，AI 决定其余并
+在里程碑汇总里给人否决；方向层 fresh-context 反方；热存储到期）+ 2026 frontier class 模型适配（能力下限
+Opus 5），对齐 OpenSpec 1.13。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
+`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）、
+`docs/specs/2026-10-15-v6-captain-model-design.md`（v6.0，证据与反方并排记录在
+`docs/evidence/2026-10-14-workflow-review/`）；v5.2–v5.5 无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
 
 ## 目录结构约定
 
@@ -17,11 +18,12 @@ my-work-skill/
 ├── VERSION                  # 发版版本（= tag）；bootstrap 写进项目 Toolkit 行与机器标记文件，Session Start 比对
 ├── docs/specs/              # 设计契约
 ├── docs/plans/              # 实现计划
-├── hooks/                   # PreToolUse / PostToolUse 脚本源码 + README（原则、注册片段、heavy-test 三问、echo 用例）
+├── docs/evidence/           # 回顾记录与反方并排文档（原始数据在各自 raw/，gitignored）
+├── hooks/                   # PreToolUse / PostToolUse 脚本源码 + README（原则、注册片段、heavy-test Day-1 四问、echo 用例）
 ├── skills/                  # 由 project-bootstrap 部署到 ~/.claude/skills/
 │   ├── project-bootstrap/   # 部署 + 立项：装 skills、brainstorm、回填、hooks、迁移（含 backlog 瘦身）
-│   ├── change-loop/         # 核心：风险路由 + 契约循环（含 dispatch-prompt.md：派发 / reviewer / spec critic）
-│   └── value-review/        # 主线回顾：route check（航线校准）+ project review（工程复盘）
+│   ├── change-loop/         # 核心：风险路由 + 契约循环（含 dispatch-prompt.md：派发 / reviewer / spec critic / 方向反方）
+│   └── value-review/        # 里程碑汇总（写给人）+ project review（板块收官）+ 方向反方的触发与并排表
 └── templates/
     ├── CLAUDE.md            # 项目模板（含 North Star 段、常设授权，~40 行常驻）
     ├── backlog.md           # 索引式 backlog：Now / 主线 / 支线 / Done，≤8KB
@@ -37,6 +39,11 @@ my-work-skill/
   `templates/openspec-config.yaml` 只复述 opsx 流程内需要的条目，不另立判据。
 - 新经验进 GUIDE.md 与 skills，实测证据进 FIELD-LOG.md；hook 脚本只改 `hooks/`，改完跑其 README 的 echo 用例。
   WORKFLOW.md v3.6 已退役（v5.2），原文见 tag v5.1。
+- skill 正文不放评估位 / 观察位（部署的是静态副本，没人会删）；GREEN 观察只记 FIELD-LOG 并带到期日，
+  到期未回填即作废。
+- 改 skill 正文前，先 grep 各部署项目 `retros/` 最近两份汇总的 `工具包:` 行——那是项目 session 留给工具包的
+  RED 候选（项目 session 不读本仓库，回路是工具包侧主动取）。
+- 每加一条约束先答四问（GUIDE §1）：替换掉了什么、热存储净减多少、防哪种失败、近几周在当前模型上出现过吗。
 - 模型下限 Opus 5：不为更弱模型加约束，不为特定模型建特调层。
 - 发版：改 `VERSION`、README 版本表、GUIDE §5 对照表，tag 同名；动到 GUIDE §5 接口表里的东西 = major。
 
@@ -49,6 +56,7 @@ my-work-skill/
 
 | tag | 日期 | 内容 |
 |---|---|---|
+| v6.0 | 2026-10-15 | 船长模型（major）：问人只有四类、R2 不再人批、AI 决定记 `Decided:`；里程碑汇总取代 route check；fresh-context 方向反方；decisions 只收人裁定、watch 到期删行；change-loop 切除十余处过程约束；Hard Rules 9→7；路由两行、Now 三字段；bootstrap 带 v5.5→v6.0 迁移段（分批：new_review_create 先） |
 | v5.5 | 2026-09-11 | 无人值守迁移可先提交后确认；North Star 删「当前阶段重点」，当前阶段只在 backlog Now（观察位 #7 升级） |
 | v5.4 | 2026-09-11 | sports 首次迁移回灌：echo 配方改读 `$LASTEXITCODE` 并恢复代码页，hook 输出 UTF-8，Tier 1 提示语栈无关，迁移起点按形态推断 |
 | v5.3 | 2026-09-11 | 版本戳：`VERSION` ↔ 项目 Toolkit 行 ↔ 机器标记文件，Session Start 比对触发迁移；迁移时机规则；接口兼容承诺 |

@@ -155,9 +155,9 @@ settings.json 的改动当场生效，不用重启（zd-tool 实测：PostToolUs
 
 ## 不做 hook 的约束
 
-TDD 先测后码（无法判定一次 Write 是实现还是接口 / 配置）、评审必须 subagent（hook 分不清
-主 session 与 subagent）、commit message 格式（因项目而异）、外部 API 查证、checkpoint 时机：
-都留在文本层。
+评审必须 subagent（hook 分不清主 session 与 subagent）、commit message 格式（因项目而异）、
+checkpoint 时机：都留在文本层。TDD 先测后码的顺序与「外部 API 先验证」已于 v6 从文本层切除
+（ablation 台账 FIELD-LOG 2026-10-15，复发才回装；外部库实查仍在 spec critic 第 3 条）。
 
 ## 扩展
 
