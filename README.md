@@ -20,6 +20,7 @@ my-work-skill/
 ├── docs/specs/              # 设计契约
 ├── docs/plans/              # 实现计划
 ├── docs/evidence/           # 回顾记录与反方并排文档（原始数据在各自 raw/，gitignored）
+├── docs/overview.html       # 工作流全景图网页（展示介绍用）：三层循环、船长模型、全流程与 Change Loop 细分
 ├── hooks/                   # PreToolUse / PostToolUse 脚本源码 + README（原则、注册片段、heavy-test Day-1 四问、echo 用例）
 ├── skills/                  # 由 project-bootstrap 部署到 ~/.claude/skills/
 │   ├── project-bootstrap/   # 部署 + 立项：装 skills、brainstorm、回填、hooks、迁移（含 backlog 瘦身）
