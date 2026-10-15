@@ -78,7 +78,7 @@ critic blocking 真缺陷占比（基线约半数）——2 个 R2；每个 R2 C
   段名与 change-loop §2–§5 引用一一对应；尺寸 change-loop 11,546（契约 ≤11.5KB 边上，吸收了原 opsx 每 R2 32.9KB 的加载）、dispatch 5,780、
   value-review 6,999、bootstrap 11,900、change.md 2,267、模板 CLAUDE.md 2,595。
 - 部署：三 skill `diff -rq` identical；标记 v7.0。
-- new_review_create 迁移 commit `0f329f4`（未 push，Now 记待确认）：`git rm` 7 个 openspec-* skill、7 个 opsx command、schemas/lite 3 文件、
+- new_review_create 迁移 commit `0f329f4`（用户 10-15 认了）：`git rm` 7 个 openspec-* skill、7 个 opsx command、schemas/lite 3 文件、
   config.yaml、route hook 脚本；settings.json 只剩 destructive-git / backlog-size；CLAUDE.md Session Start（`openspec/changes/*/change.md`
   或根 SPEC.md）、Stack 归属行（归档 change.md，旧归档为 proposal.md / spec-lite.md）、Enforcement 行、Toolkit 行 v7.0；backlog Now 加待确认；
   `docs/notes/2026-10-15-openspec-validate-baseline.md` 记基线 24 passed, 0 failed；引用清扫：CLAUDE.md / backlog 无前瞻性命中，
