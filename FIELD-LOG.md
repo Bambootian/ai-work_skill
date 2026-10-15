@@ -4,8 +4,121 @@
 > 退役，原文见 tag v5.1）。
 > 记录纪律（README 修改约定的落地点）：改 skill 正文之前，证据先记入本文件（RED——
 > 运行时失败、使用投票、官方指导均为合法形态）；改完补齐修复对照与验证证据，
-> GREEN 观察项登记在对应条目的 ablation 台账中。
+> GREEN 观察项登记在对应条目里并带到期日，到期未回填即作废；skill 正文不放观察位（2026-10-15 起）。
 > 绕规则的原话逐字记录——它们是 rationalization 表的原料。新条目追加在最上方。
+
+## 2026-10-15 — v6.0 船长模型：人机分工翻转、里程碑汇总、方向反方、热存储到期、过程约束减法（major）
+
+**RED**：下方 2026-10-14 条及其完整记录 `docs/evidence/2026-10-14-workflow-review/README.md`（四个根子、八条拍定、撤回表）。
+设计过程与反方并排：同目录 `2026-10-15-v6-proposal-adversary-panel.md`——工具包会话先写 30 条草案，再起 6 个 fresh-context
+agent（3 个独立设计视角：减法优先 / 契约记忆优先 / 船长模型优先；3 个反方：重流程修重流程 / 证据保真 / 可执行性与迁移），
+52 条反对、15 条 blocking 全部接受进修订（三组设计者在 9 个要点上独立收敛；三个反方都撞到同一处：被删规则还活在模板
+CLAUDE.md 与 openspec-config 里）。设计契约：`docs/specs/2026-10-15-v6-captain-model-design.md`。
+
+**用户裁定（2026-10-15，四条，在 10-14 八条之上）**：① 触点收缩认——开工前只剩立项 brainstorm（只确认 North Star 与主线）与
+方向态 change 先定方向，R2 spec 人批准与每 change brainstorm 取消（改 09-27「spec 经人批准」）；② 「最不满意」一问移到里程碑
+汇总末行必填，判决先写（改 09-11「route check 第一行固定问人」）；③ 热存储选 A：沿用 10-14 定义（watchlist / decisions 属热），
+decisions 只收方向 / 钱 / 时间 / 找谁，watch 优先写到会被读到的地方，到期 AI 审后删行并在汇总列出；④ 先迁 new_review_create
+跑一个里程碑看 GREEN，再迁其余四个。
+
+**修复（v6.0）**
+
+| 文件 | 改动 |
+|---|---|
+| `skills/change-loop/SKILL.md` | 问人四类 + `Decided:` 可选行；R2 不等人批；R3 = 方向态先派反方；路由两行（删 Next）；R1 = 单文件含 Loop Contract（lite schema 正式化）；spec 只写契约；切除一 task 一迭代 / 5 次上限 / stuck 三判据（留一句）/ TDD 顺序 / 每 change 默认先 brainstorm / 「计划脱节重生成 tasks」/ 三分类 / Errata 仪式 / 两处过期槽 / 「假设靠读取验证」/ 「harness 警告时收工」/ 合理化反驳句 / R0 数值；常设授权段压缩为两行；Close 删 `主线:` 复述与工具名；等待期一段；路由时按路径 grep watch |
+| `skills/change-loop/dispatch-prompt.md` | reviewer 冲突由 AI 裁定记 `Decided:`；单 reviewer 核 Verify 覆盖 Outcome 与 scenarios；新增「方向反方变体」（快照 + 改名 + `claude -p` 只读配方、并排表四列、Agent 退路标弱一档）吸收 R3 skeptic |
+| `skills/value-review/SKILL.md` | route check 六项 → 里程碑汇总七段（写给人、无代号、②③ 由命令生成、⑤ 机械信号 a / b 必写、⑦ `工具包:` 行、末行「最不满意」）；project review 第 5–7 项由方向反方写并排；触发加大投入前 / 机械信号，删支线计数 ≥3 与 8 周 / 钻牛角尖连击；删观察位表；description 同步 |
+| `skills/project-bootstrap/SKILL.md` | 人只确认 North Star 与主线；brainstorm 产出加项目参数；v3→v5.4 迁移段移到 GUIDE §5；新增 v5.5→v6.0 七步 + 分批裁定（到期 = new_review_create 首份 v6 汇总）；Common mistakes 加「向人问技术题」 |
+| `templates/CLAUDE.md` | North Star 删三分类两行；Stack 加项目参数行；Hard Rules 9→7（测试条改写、删外部库验证、语义模糊 → 问人四类、subagent 两条合一含方向反方） |
+| `templates/backlog.md` | Now 三字段（删支线计数）；下一步示例含等待期活；支线段写到期规则与就地放置优先；头部「超了先审再移出」 |
+| `templates/openspec-config.yaml` | rules / guidance 每项双引号字符串（修 09-15 被 OpenSpec 忽略的根因：未加引号的「冒号 + 空格」被 YAML 解析成映射）；删「每迭代恰好一个 task」与 Errata 句；Decisions 句改中性措辞 |
+| `hooks/warn-route-before-opsx.ps1` | 文案 Route / mainline lines（脚本名、matcher 不变） |
+| `GUIDE.md` | §1 加契约 vs 流程边界、人机分工、四问、四条工程原则；§2 速查；§3 加并行 / 双反方两行；§4 加 config.yaml 字符串法则；§5 接口表 v6.0 + v5.5→v6.0 对照表 + 历史迁移步骤附录；§6 归属表热 / 冷、decisions 语义、`Decided:`、冻结能力移冷、`工具包:` 行 |
+| `README.md`、`VERSION` | v6.0；修改约定加三条（skill 不放观察位；改 skill 前先读各项目 `工具包:` 行；加约束先答四问） |
+
+**Ablation 台账**（切除 → 守护的失败 → 复发信号 → 回装方式；复发时记一行含当时模型，只定点回装）
+
+| 切除项 | 守护的失败模式 | 复发信号 | 回装方式 |
+|---|---|---|---|
+| 每迭代恰好一个 task | 一次做太多、提交粒度失控 | 单 commit 混多个 task 且 gate 抓到跨 task 回归 | 回装一句 |
+| 5 次迭代上限 + stuck 三判据（空 diff / 同签名 2 次 / 往返一圈） | 无效重试 | 同一错误签名重复 ≥3 次仍在改（失败注记可数） | 回装三判据 |
+| 先写失败测试的顺序 | 无测试实现、假绿 | gate C 类「验证太弱」占比升过 7%（基线 20/307） | 回装顺序 |
+| 每 change 默认先 brainstorm（superpowers:brainstorming） | 未审视意图直奔 spec | R2 change 做完被整体撤回且起因是意图误读（汇总 ② 被否决） | 该项目 CLAUDE.md 恢复每 change brainstorm |
+| 「计划与现实脱节 → 从 spec 重生成剩余 tasks」 | 逐行补丁式修计划 | tasks.md 连续 ≥3 次局部补丁后仍与 spec 脱节 | 回装一句 |
+| Outcome 三分类 + enabling ≤2 change | 技术自嗨、enabling 永不落地 | 汇总 ① 连续一个里程碑为空；反方指出连续 ≥3 个 change 无用户可见产物 | 回装三分类列 |
+| 「语义模糊停下问」/ R2 spec 人批准 / [decide] A/B 停等 | 大规模做错东西无人看 | 汇总 ② 里用户否决了一条事前批准本可拦住且难撤回的决定 | 该项目 CLAUDE.md 恢复 R2 事前批准 |
+| 支线计数 + 主线段只经回顾批准增删 | 支线连击无人回顾（钻牛角尖） | 用户再说「钻牛角尖」而机械信号未亮；AI 的主线改动被用户否决 ≥2 次 / 里程碑 | 回装计数或审批门 |
+| 「最不满意」首问在第一步 | 失去人的信号通道 | 用户在汇总之外主动提出方向 / 流程问题 ≥1 次 / 里程碑 | 问句提回显眼处 |
+| 观察位 #4–#6、两处评估 / 观察位 | 回顾系统性盲点 | 出现 #5 / #6 本会标出的方向问题而机械信号未触发反方 | 加一条机械信号 |
+| Errata / Decisions Source-Superseded 仪式名（留一句分流） | 订正回流 backlog；架构失忆 | 订正进了 backlog / decisions；AI 重提已 Superseded 方案 | 回装一句 |
+| 「『这次简单』不算」反驳句 | 借口式免跑 gate（09-02 zd-tool） | `Gate:` 行免跑理由出现「简单 / 小 / 明显」而无具体信号 | 定点回装 |
+| §1「假设靠读取验证不靠回忆」；§6「harness 警告上下文时收工」 | 凭记忆改码；上下文过载 | 对既有代码的错误假设进 gate [blocking]；后者 harness 已自动摘要，无复发形态 | 回装一句 |
+| R0 ≤1 小时 / 一次 commit | 大活伪装 R0 绕 gate | R0 commit 被回归修复指回且本应由 gate 抓 | 回装数值 |
+| 路由 `Next:` 行、Close `主线:` 复述、工具名点名 | 下一步脱节；静默跳过验证环节 | 路由后实际动作与声明不符；Verify 工件与 spec 对不上在 archive 后才发现 | 回装行 |
+| Hard Rules「外部库先验证」「测试承重墙：不删除」 | 幻觉 API；为变绿删测试 | 外部库不存在的缺陷进 gate；删测试换绿被 reviewer 抓到 | 回装一句 |
+| openspec-config「每迭代恰好一个 task」、Errata 句 | 同上 | 同上 | 同上 |
+
+**验证（2026-10-15）**
+- 尺寸（wc -c，改前 → 改后，评审消歧补句后的终值）：change-loop 11,053 → 9,249（−16%；设计值 ≤7.5KB 未达，判定不再删语义，
+  契约改为 ≤9.5KB）；dispatch-prompt 3,377 → 5,346（+方向反方变体，仅派发时读）；value-review 7,170 → 6,804；project-bootstrap
+  14,408 → 11,390（历史迁移段移到 GUIDE §5）；模板 CLAUDE.md 2,392 → 2,615（+项目参数行，Hard Rules 7 条）；backlog 1,703 → 2,028。
+  每 change 必读（change-loop + 模板 CLAUDE.md + backlog）15.1KB → 13.9KB——提示层字节只减了 8%，真正的减法在条目数（Hard Rules 9→7、
+  路由 3→2 行、Now 4→3 字段、切除十余处过程约束）与项目侧热存储（decisions 只收四类、watch 到期）。
+- 陈旧锚点 grep（`Next:`、`支线计数`、`评估位`、`观察位`、`三分类`、`每迭代恰好`、`harness 警告`、`承重墙`、`语义模糊`、`Errata`、
+  `回报一次后`、`靠读取验证`）在 change-loop / value-review / templates / hooks 零命中；bootstrap 只在 v5.5→v6.0 迁移段作为「要删的旧句」出现。
+- `templates/openspec-config.yaml` PyYAML 6.0.3 解析：rules.tasks 2、apply 2、archive 3，每项均为 str。
+- `warn-route-before-opsx` echo 用例（独立隐藏控制台、chcp 936、无 BOM UTF-8 含中文 cwd）：`opsx:propose` → 一行 JSON
+  `additionalContext`「…(Route / mainline lines)…」exit 0；`opsx:proposed` / `change-loop` → 静默 exit 0；坏 JSON → stderr exit 1。
+- fresh-context 评审与部署副本 diff：见本条目末「验证补记」。
+
+**收口旧观察位**
+- 09-27 GREEN「免跑一侧会不会漏问题」→ 关闭：09-29→10-13 10 个 change，critic 12 轮 / gate 13 轮 / 增量 18 轮，写完代码后的 gate 87% 真缺陷，
+  未发现可归因于免跑轮的漏网（`docs/evidence/2026-10-14-workflow-review/raw/gate-findings-0929-1013.md`，本机）。
+- 09-22「Loop Contract 要必不缺应进模板或 hook」→ v6 以「R1 单文件 = Loop Contract」处置，不加 hook（无契约缺失的 RED）。
+- 09-23「non-blocking 守卫自检路径（v5.6 候选）」→ 延后；触发 = 下次改 hook 脚本，或再出现守卫静默失效。
+- 09-15「config.yaml archive guidance 被 OpenSpec 整体忽略」→ 根因与修法见上表 openspec-config 行。
+- change-loop 两处「回报一次后删除」槽位（09-12 / 09-14 / 09-22 已回报）已删；value-review 观察位表已删；今后 skill 正文不放观察位。
+
+**GREEN 观察位**（到期 2026-11-30 或注明次数；到期未回填即作废，不再承载在 skill 里）
+1. new_review_create 首份里程碑汇总：≤40 行、无内部代号、用户有反应（答了末行或否决了 ② 任一条）——2 个里程碑。
+2. 汇总 ⑥ 需要人定的问题每里程碑 ≤1 条——2 个里程碑。
+3. 首次方向反方实战：并排表行数、接受 / 否决条数、反方方向建议与最终决定是否相反（回测预期相反）——1 次实战。
+4. 到期审：移出条数 vs 用户否决条数；真跑暴露的缺陷其条件曾在被移出条目里 = RED——2 个里程碑。
+5. 等待期产物是否碰到隔离区外路径——1 个等待期。
+6. 迁移后 new_review_create CLAUDE.md 字节与 Hard Rules 条数；decisions.md 增速。
+7. Ablation 复发信号逐条核一次——2026-12-31。
+
+**待琢磨（留档，拍定 8）**：多 change 并行。冲突类型（多线程类比）：同一批源文件（合并冲突，看得见）；函数行为或契约（数据竞争，不崩溃
+但结果错——串行时已发生：广度门改按段计，交付包仍按标注计）；热文档（Now 整段覆盖、主 spec 归档合并的非原子读改写）；运行时数据
+（runs/、ChromaDB、SQLite 读到写了一半的状态）；测量基准被中途改动；长进程无锁重入；「只在绿提交」互相阻塞。候选手段（未定）：
+worktree 只隔离代码、数据目录与热文档也要分；声明读写集合有交集即串行；测量读带哈希的不可变快照；合入设串行点逐个 rebase + 全量
+Verify；热文档每 change 各写各的、里程碑再合。风险：这套机制本身就是不小的工程。首次实战时机与第二反方开不开，等 new_review_create 迁移时用户定。
+
+**标定集**：方向反方的参考标定 = new_review_create 09-19（`9080f72`）/ 09-23（`cfe3a70`）两个快照 + 预登记与盲评
+（`docs/evidence/2026-10-14-workflow-review/raw/backtest/`，本机）；换模型或改反方提示词时重跑一次作参考——只有一个已知转向，不作判据。
+
+**验证补记（2026-10-15，评审与部署后）**
+- fresh-context 评审 3 视角（一致性 / 裁定保真 / 可执行性，只读，约 69 万 token、14 分钟）：32 条意见、3 条 blocking，全部接受——
+  ① change-loop 把 R3（含 ARCHITECTURE / 数据契约）无条件接到「先派反方」，与 value-review 触发表矛盾（三方均提）→ R3 拆为「方向项交人定、
+  反方按 value-review 触发表」，ARCHITECTURE / 数据契约归 R2，不派反方不问人；② `schema: lite` 不是 OpenSpec 内建、缺一次性命令
+  `openspec schema init lite --artifacts "specs,tasks" --no-default`（本机实测 finance_tool 无 schemas/）→ bootstrap Step 2 与迁移 ④ 补上；
+  ③ 到期「两次汇总」没定义怎么数（按旧 route-check 算，首份 v6 汇总会一次到期约 85 条）→ 只数 `*-milestone.md` / `*-project-review.md`，
+  ②③ 超 5 条时正文留前 5 条 + 计数、全文作附录。minor 全部接受：模板项目参数示例去 Codex 与数字；第二反方参数三值与派发规则对齐；
+  机械信号 a 固定写法「✓ / ✗（连续第 n 次）」；② 命令写成可粘贴形式并覆盖 docs/notes；等待期产物写 `docs/notes/<date>-waiting.md`、Now 只改一句；
+  gate 段补「免跑理由指出具体信号」；到期审加「改绑」出口；bootstrap 迁移补 Session Start 删句、其余项目参数写「无」、文件不存在不建、
+  context 只删同义句、分批裁定退出路径；GUIDE §5 历史表被误改的两行恢复、§2 回退格；hooks/README「不做 hook」段更新；README 三问→四问；
+  ablation 台账补 brainstorm 与重生成 tasks 两行；FIELD-LOG 头部与标定集一行。未改：`block-replaced-skills.ps1` 提示语里的「SPEC-lite」
+  保留为别名（文件名 spec-lite.md 仍成立）；openspec-config context 的「全量测试需人批准」保留为机器安全红线。
+- 部署：`~/.claude/skills/{change-loop,project-bootstrap,value-review}` 覆盖复制，`diff -rq` 三目录 identical；
+  `~/.claude/my-work-skill.toolkit-version` = `v6.0`（无 BOM，字节 76 36 2E 30）。
+- new_review_create 迁移（分批第一批，无人值守先提交后确认）：CLAUDE.md Hard Rules 10 → 7（删 watch 触发标签规则、语义模糊停下问、
+  外部库先验证、测试承重墙旧句）；North Star 删三分类行；Session Start 删「只在 gate 或阻塞时问」；Stack 加项目参数行（初值取自 decisions 10-07，
+  待确认）并收入一条原在 backlog Now 的运行须知；backlog Now 删支线计数、悬而未决加迁移待确认；decisions.md 头部加「只收四类」行；
+  openspec/config.yaml rules / operations 对照模板替换，context 不动；lite schema 已存在跳过；route hook 重部署，echo 用例 opsx:propose →
+  一行 JSON、opsx:proposed → 静默、坏 JSON → exit 1；Toolkit 行 v6.0。其余四个项目按分批裁定待第一批首份汇总后再迁。
+
+**方法注**：面板 6 个 agent 均 fresh-context 只读，约 101 万 token、18 分钟；反方自标的两处推测已由本会话 harness 说明核实
+（subagent 会被注入与主会话相同的 CLAUDE.md，所以 Agent 派发的反方独立性确实弱一档；harness 系统提示不含「外部库先验证」）。
 
 ## 2026-10-14 — new_review_create 工作流回顾：流程过重、人机分工放反、约束还在防旧失败（v5.5，RED，未改 skill）
 
