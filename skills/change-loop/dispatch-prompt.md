@@ -31,7 +31,8 @@
 
 ## Reviewer 变体（gate 评审，代码收尾）
 
-- fresh-context：只给 diff + spec + 评审标准，**不给**产生代码的推理过程。
+- fresh-context：只给代码 diff + change 文件 + spec diff（与 critic 同一条命令：`git diff <BASE> -- <Spec 改动列出的文件>`，BASE 读 change 文件头部）
+  + 评审标准，**不给**产生代码的推理过程。就地删掉的 scenario 是 spec diff 里的 `-` 行，要看。
 - 每条 finding 标注：[blocking] = 违反 spec / 契约，或真实缺陷（正确性 / 资源泄漏 /
   数据丢失 / 安全）——必修，架构 / 质量视角发现的真实缺陷同样是 [blocking]；
   [nit] = 风格与「可以更好」——记录不追（防评审驱动的过度工程）。
@@ -44,15 +45,16 @@
 
 ## Spec critic 变体（spec 成文后、进循环前）
 
-只给 spec 产物（proposal / design / tasks / spec，或 R1 单文件）+ 代码库只读权限，不给
-brainstorm 过程。立场：默认找问题；报 PASS 前先写你试过怎么打它。逐条 yes/no：
+只给 change 文件 + 主 spec 的 diff（`git diff <BASE> -- <Spec 改动列出的文件>`，BASE 读 change 文件头部那一行）
++ 代码库只读权限，不给 brainstorm 过程。立场：默认找问题；报 PASS 前先写你试过怎么打它。逐条 yes/no：
 
-1. 意图三向覆盖：proposal 每件事 ↔ spec Requirement ↔ tasks，缺一列出。
-2. 对既有代码的每个假设——去读代码核实，不信 spec 的转述（最常见的漏）。
+1. 意图三向覆盖：Why 每件事 ↔ spec diff 里的 Requirement / Decision ↔ Tasks，缺一列出。
+2. 对既有代码的每个假设——去读代码核实，不信 change 文件的转述（最常见的漏）。
 3. 外部 API / 库：每个引用实查存在与签名。
-4. 范围：tasks 有 spec 没要求的？Non-goals 盖住蠕变了吗？Outcome 写明了谁能观察到什么吗？
-5. 可验证：每个 Requirement 有成功 + 失败 scenario；Verify 命令真覆盖 scenarios；末 task 端到端。
-6. 决策：每条带「为什么」+「失效前提」。
+4. 范围：Tasks 有契约没要求的？Non-goals 盖住蠕变了吗？Outcome 写明了谁能观察到什么吗？
+5. 可验证：diff 里每个新增 / 修改的 Requirement 有成功 + 失败 scenario，删掉的 scenario 有理由；Verify 命令真覆盖
+   scenarios；末 task 端到端。
+6. 决策：diff 里每条 Architectural Decision 带「为什么」+ Fails when + Source；Decisions 段的备选真被考虑过。
 7. 必填：最不放心的 3 处，即使整体 PASS。
 
 多视角时第二视角只做第 2 条（假设对照代码），不共享结论。
@@ -71,7 +73,7 @@ brainstorm 过程。立场：默认找问题；报 PASS 前先写你试过怎么
 - Output（Markdown，≤150 行）：一句话结论；方向上最可能错的 3–5 点（判断 / 证据 / 若对意味着
   什么）；建议方向，或方向没问题的理由与最强反方为何不成立；最不确定的 3 处。
 - 回来后主循环逐条核事实，写并排表四列：反方原话（≤2 行）｜事实成立?｜接受 / 反驳｜对方向意味着
-  什么——进 retro 或 proposal 的 Why，交人。反方全文进 `docs/notes/<date>-adversary.md`，不进常驻
+  什么——进 retro 或 change 文件的 Why，交人。反方全文进 `docs/notes/<date>-adversary.md`，不进常驻
   文档，不转述。反方擅长发现问题，方向建议只作参考（回测 3 个里 2 个指错）。第二个反方：项目参数
   「第二反方」写了必派 / 不派就照它；写「按内容判定」或未写时，改 North Star / 新板块 / 花费超参数任一
   即派，派不派在并排表表头写一行理由；有第二个模型家族可用则优先用它。

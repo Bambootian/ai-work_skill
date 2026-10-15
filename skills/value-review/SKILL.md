@@ -14,9 +14,9 @@ description: Use before routing the next change when any of these hold - a mainl
 |---|---|
 | **里程碑汇总** `retros/<date>-milestone.md`，≤40 行 | 主线里程碑 archive（该步判据可观察达成）｜最近汇总 ≥4 周（backstop；锚点按 commit 序取 `git log -1 --format=%cs -- <retros>`，命中而未写文件 = 未回顾）｜机械信号命中｜人问 |
 | **Project review** `retros/<date>-project-review.md`，≤120 行（含并取代同次汇总） | 板块收官｜模型换代（家族名或主版本号变化，对照上份末行）｜人要求 |
-| **方向反方**（嵌在上面两者里；大投入前而无里程碑时，并排表进该 change proposal 的 Why，不另写 retro） | 大投入前：新板块 / 改 North Star、板块终态或主线段 / 花费超项目参数 / 主线步预估 ≥5 个 change（门槛为项目参数）｜机械信号 a / b（见 ⑤）｜模型换代 / 人问（随 project review 或汇总）｜同一板块 ≤1 轮，除非信号命中 |
+| **方向反方**（嵌在上面两者里；大投入前而无里程碑时，并排表进该 change 文件的 Why，不另写 retro） | 大投入前：新板块 / 改 North Star、板块终态或主线段 / 花费超项目参数 / 主线步预估 ≥5 个 change（门槛为项目参数）｜机械信号 a / b（见 ⑤）｜模型换代 / 人问（随 project review 或汇总）｜同一板块 ≤1 轮，除非信号命中 |
 
-路径：OpenSpec 项目 `openspec/retros/`，其他 `docs/retros/`；旧 `*-route-check.md` / `*-value-review.md` 视作上一份汇总。
+路径：`<retros dir>`（既有项目 `openspec/retros/`，其他 `docs/retros/`）；旧 `*-route-check.md` / `*-value-review.md` 视作上一份汇总。
 
 ## 里程碑汇总（七段 + 末两行；正文 ≤40 行——②③ 各超过 5 条时正文只留难撤回 / 前 5 条 + 计数，全文清单作附录不计行）
 
@@ -31,7 +31,8 @@ description: Use before routing the next change when any of these hold - a mainl
    没触发 → 一句「未触发：<信号读数>」。
 ⑤ **位置**：主线 k/M 步；剩余步数与按实际节奏的估算（外部事件解锁的步注明不可估）；上期承诺
    <X>：✓ / ✗（连续第 n 次）；机械信号 **a**（n ≥ 2——若该项是可只读跑的实验，等待期直接跑）/
-   **b**（判据报「达成」而主线仍在继续）：命中 / 未命中；唯一下一步。
+   **b**（判据报「达成」而主线仍在继续）：命中 / 未命中；在途 change 的「Spec 改动」一行（`ls <changes dir>/*/change.md`
+   读出；无则不写）；唯一下一步。
 ⑥ **需要你定的**：只限方向 / 钱 / 时间 / 找谁，每条带推荐与改主意的代价；没有写「无」。
 ⑦ **`工具包:`** 一行：工作流哪里卡或重（没有写「无」）。
 末两行：「这段用下来最不满意的一件事？」（未答写「未答」，不编）；`模型: <会话模型名>`。

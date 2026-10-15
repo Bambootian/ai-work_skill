@@ -20,7 +20,7 @@
 先比对 Toolkit 版本与 `~/.claude/my-work-skill.toolkit-version`（机器上已部署的 skill 版本）：
 不等或任一缺失 → 先跑 project-bootstrap 迁移（绿树 task 边界、单独 docs commit）再继续。
 读 North Star 段；读 backlog.md 的 Now 段与主线段（缺文件或缺这两段同样先迁移）；找在途
-change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 行报告状态并直接继续。
+change（`<changes dir>/*/change.md`，或根 SPEC.md）；有则读 Loop Contract 后 ≤2 行报告状态并直接继续。
 
 ## Hard Rules
 - 任何 change 先经 change-loop 路由，再动 spec 或代码
@@ -36,5 +36,4 @@ change（openspec/changes/ 或根 SPEC.md）；有则读 Loop Contract 后 ≤2 
   的 opt-in 不适用于单个 subagent）——不请示；派不出去 → 报原因、标 ungated，不在本会话 inline 替代
 
 ## Enforcement
-hooks 见 .claude/settings.json（heavy-test / destructive-git / route-before-opsx / backlog-size，
-由 project-bootstrap 部署）
+hooks 见 .claude/settings.json（heavy-test / destructive-git / backlog-size，由 project-bootstrap 部署）
