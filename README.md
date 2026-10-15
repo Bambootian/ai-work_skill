@@ -1,11 +1,12 @@
 # my-work-skill
 
-AI 工程开发工作流 v6.0：契约内核 + 主线锚定 + 船长模型（人只定方向 / 钱 / 时间 / 找谁，AI 决定其余并
-在里程碑汇总里给人否决；方向层 fresh-context 反方；热存储到期）+ 2026 frontier class 模型适配（能力下限
-Opus 5），对齐 OpenSpec 1.13。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
-`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）、
-`docs/specs/2026-10-15-v6-captain-model-design.md`（v6.0，证据与反方并排记录在
-`docs/evidence/2026-10-14-workflow-review/`）；v5.2–v5.5 无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
+AI 工程开发工作流 v7.0：契约内核 + 主线锚定 + 船长模型（人只定方向 / 钱 / 时间 / 找谁，AI 决定其余并
+在里程碑汇总里给人否决；方向层 fresh-context 反方；热存储到期）+ 自家 change 形态（一个 change 一个
+`change.md`，能力主 spec 在 change 内就地改，差异 = git diff，归档 = git mv；不再依赖 OpenSpec 或 superpowers）
++ 2026 frontier class 模型适配（能力下限 Opus 5）。设计契约：`docs/specs/2026-08-14-v5-subtraction-design.md`（v5）、
+`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`（v5.1）、`docs/specs/2026-10-15-v6-captain-model-design.md`（v6.0）、
+`docs/specs/2026-10-15-v7-change-form-design.md`（v7.0）；证据与反方并排记录在 `docs/evidence/2026-10-14-workflow-review/`；
+v5.2–v5.5 无独立 spec，记录见 `FIELD-LOG.md` 2026-09-11。
 
 ## 目录结构约定
 
@@ -27,7 +28,7 @@ my-work-skill/
 └── templates/
     ├── CLAUDE.md            # 项目模板（含 North Star 段、常设授权，~40 行常驻）
     ├── backlog.md           # 索引式 backlog：Now / 主线 / 支线 / Done，≤8KB
-    └── openspec-config.yaml # OpenSpec 项目的 config.yaml：opsx 流程内约定（Loop Contract / Purpose / archive Decisions）
+    └── change.md            # 一个 change 一个文件：路由两行 + BASE / Loop Contract / Why / Non-goals / Spec 改动 / Decisions / Scenarios / 流程 / Tasks / 注记 / Close
 ```
 
 ## 修改约定
@@ -35,8 +36,7 @@ my-work-skill/
 - 改流程先改本仓库文档，再改各项目实践（约束先行）。
 - skills 修改先有证据再改正文：证据落 `FIELD-LOG.md`（append-only）——运行时失败、
   使用投票、官方指导均为合法证据形态；改后补验证对照。
-- 循环机制的数值与判据唯一权威在 `skills/change-loop` 与 `skills/value-review`；GUIDE 等处速查冲突以 skill 为准；
-  `templates/openspec-config.yaml` 只复述 opsx 流程内需要的条目，不另立判据。
+- 循环机制的数值与判据唯一权威在 `skills/change-loop` 与 `skills/value-review`；GUIDE 等处速查冲突以 skill 为准。
 - 新经验进 GUIDE.md 与 skills，实测证据进 FIELD-LOG.md；hook 脚本只改 `hooks/`，改完跑其 README 的 echo 用例。
   WORKFLOW.md v3.6 已退役（v5.2），原文见 tag v5.1。
 - skill 正文不放评估位 / 观察位（部署的是静态副本，没人会删）；GREEN 观察只记 FIELD-LOG 并带到期日，
@@ -56,6 +56,7 @@ my-work-skill/
 
 | tag | 日期 | 内容 |
 |---|---|---|
+| v7.0 | 2026-10-15 | change 形态脱离 OpenSpec（major）：一个 change 一个 `change.md`，主 spec 在 change 内就地改、差异 = git diff、归档 = git mv；critic 与 gate 读同一条 spec diff；退役 opsx 生成 skill / validate / archive 合并 / config 注入 / lite schema / route hook（hooks 3）/ OpenSpec CLI；并行前提 worktree-per-change |
 | v6.1 | 2026-10-15 | superpowers 插件退役（立项 brainstorm 改为对话）；hooks 6→4（退役两个 superpowers 守卫，旧注册无害）；change-loop / value-review 加「随时可说主线错了，不必等回顾」 |
 | v6.0 | 2026-10-15 | 船长模型（major）：问人只有四类、R2 不再人批、AI 决定记 `Decided:`；里程碑汇总取代 route check；fresh-context 方向反方；decisions 只收人裁定、watch 到期删行；change-loop 切除十余处过程约束；Hard Rules 9→7；路由两行、Now 三字段；bootstrap 带 v5.5→v6.0 迁移段（分批：new_review_create 先） |
 | v5.5 | 2026-09-11 | 无人值守迁移可先提交后确认；North Star 删「当前阶段重点」，当前阶段只在 backlog Now（观察位 #7 升级） |

@@ -1,11 +1,14 @@
-# my-work-skill v6 使用指南
+# my-work-skill v7 使用指南
 
 > v5 = v4 的契约内核 + 面向 2026 frontier class 模型（能力下限 Opus 5）的减法重构。
 > v5.1 主线锚定；v5.2 WORKFLOW.md 退役、对齐 OpenSpec 1.13；v5.3 版本戳；v5.4 / v5.5 迁移回灌与用户裁定。
 > **v6.0 = 船长模型**：人只定方向、钱、时间、找谁；AI 决定其余并在里程碑汇总里给人否决；方向层
-> fresh-context 反方；热存储有上限、条目到期；过程约束减法。v6.1 = superpowers 退役、随时可说主线错了。设计契约：
+> fresh-context 反方；热存储有上限、条目到期；过程约束减法。v6.1 = superpowers 退役、随时可说主线错了。
+> **v7.0 = change 形态脱离 OpenSpec**：一个 change 一个 `change.md`，能力主 spec 在 change 内就地改，delta 就是 git diff，
+> 归档就是 git mv；opsx 生成 skill / validate / archive 合并 / config 注入 / route hook / OpenSpec CLI 全部退役。设计契约：
 > `docs/specs/2026-08-14-v5-subtraction-design.md`、`docs/specs/2026-09-08-v5.1-mainline-anchoring-design.md`、
-> `docs/specs/2026-10-15-v6-captain-model-design.md`（证据与反方并排记录在 `docs/evidence/2026-10-14-workflow-review/`）。
+> `docs/specs/2026-10-15-v6-captain-model-design.md`、`docs/specs/2026-10-15-v7-change-form-design.md`
+> （证据与反方并排记录在 `docs/evidence/2026-10-14-workflow-review/`）。
 
 ## 1. 设计原理（一页）
 
@@ -51,7 +54,7 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 | 要素 | 内环（task） | change 环 | value 环 |
 |---|---|---|---|
 | 终止 | 绿 + commit；同一错误重复 → 换思路 / BLOCKED | DONE / DONE-ungated / BLOCKED / SPLIT | 里程碑汇总 ≤40 行 / project review ≤120 行，写给人；只问四类 |
-| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层 `/opsx:update`（不静默改 spec）；tasks 由你在 spec 范围内自治改 | 人批准前零落地；最多提 1 个新 change 且在主线上 |
+| 回退 | 绿锚点 reset；fix-forward 仅限迭代内 | spec 层：主 spec 就地改 + git（不静默改契约）；tasks 由你在 spec 范围内自治改 | 人批准前零落地；最多提 1 个新 change 且在主线上 |
 | 粒度 | 一 task 一 commit | 0.5–2 天；超预算 = SPLIT 不是加班 | 触发：主线里程碑 / 板块收官 / 4 周 backstop / 机械信号 / 大投入前 / 模型换代 |
 | 验证 | 具名命令 + 期望输出 | spec critic 按内容判定；Verify 全跑；Gate 行 | 已证明 ≠ 已交付：判据证据取自用户产物；方向反方并排表 |
 
@@ -61,8 +64,9 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 |---|---|---|
 | BMAD 全套 | 拒 | 实测 6 天 $200 vs 别人 1–2 天；QA agent 对坏构建报 "Perfect"；为 5–20 人团队设计 |
 | Gas Town / 20+ agent 编排器 | 拒 | 作者本人劝退大多数开发者；solo 无收益纯成本 |
-| beads | 暂缓 | backlog.md + OpenSpec + claude-mem 已覆盖；依赖图真痛了再装（git-native 随时可补） |
-| Spec Kit / Kiro 迁移 | 拒 | SDD 横评 OpenSpec 赢 solo 场景（最低摩擦 + 最佳 brownfield）；迁移零增益 |
+| beads | 暂缓 | backlog.md + 能力主 spec + claude-mem 已覆盖；依赖图真痛了再装（git-native 随时可补） |
+| Spec Kit / Kiro 迁移 | 拒 | SDD 横评 OpenSpec 赢 solo 场景（最低摩擦 + 最佳 brownfield）；迁移零增益。v7.0 起 OpenSpec 本身也退役为自家单文件形态（下行） |
+| OpenSpec 四件套 / opsx 流程 / validate / archive 合并 | 退役（v7.0） | 7 个生成 skill 5 个零调用，propose / apply 含 29 处停等与船长模型冲突；validate 11 次失败全是 delta 自造的风险；archive 0 拦截且 Architectural Decisions 一直手写；delta 影子 1.1MB ≈ 主 spec 全量。主 spec 格式保留、可逆（`docs/evidence/2026-10-14-workflow-review/2026-10-15-v7-change-form-proposal.md`） |
 | ralph 官方插件 | 拒 | 隐藏 hooks、卸载可能破库（HumanLayer 弃用实证） |
 | 巨型 subagent fan-out | 拒 | 配额燃烧 + 非确定性；保留主循环单层扁平扇出 |
 | 多层 agent 树（孙 agent） | 拒 | token 乘法失控（实测）+ 约束传话失真 + 归因断裂；一层扁平扇出是唯一编排形态 |
@@ -75,8 +79,7 @@ skills 按需 / 持久文件）→ Prompt（skill 正文、dispatch 模板）→
 
 ## 4. 工具链排查要点
 
-命令突然失效 / skill 不触发 / 文档与命令面不符时：查版本（`/plugin list`、
-`npx openspec --version`）→ 跑最便宜的真实命令做 break-check → hook echo 用例复验
+命令突然失效 / skill 不触发 / 文档与命令面不符时：查版本（`/plugin list`）→ 跑项目 Verify 命令样例做 break-check → hook echo 用例复验
 （hook 静默死掉是最坏失败模式）→ 先改文档再改实践（约束先行）。
 项目行为像旧版（要求确认 subagent、看不见 hook 提醒、问技术题）→ 先看项目 Toolkit 行版本与
 `~/.claude/my-work-skill.toolkit-version` 是否相等，不等就是没迁移，不是 skill 坏了。
@@ -86,23 +89,24 @@ PostToolUse）下模型看得见的是 JSON `additionalContext` 或 exit 2 + std
 只进 debug 日志（SessionStart / UserPromptSubmit 例外）；脚本只含 ASCII 且 stdin / stdout / stderr
 都显式 UTF-8；注册路径走 `$CLAUDE_PROJECT_DIR`（hook 的 cwd 跟工具当前目录走）。echo 用例在独立
 隐藏控制台跑；会话乱码 → `cmd /c "chcp 65001 >nul"`（Git Bash 里写 `cmd //c`）。
-**OpenSpec config.yaml**：guidance / rules 每项必须是字符串——含「冒号 + 空格」的未加引号条目会被
-解析成映射，OpenSpec 打印 "must be an array of strings" 并整体忽略该段（2026-09-15 实测）；一律双引号。
+**OpenSpec 遗留**：任何保留 `openspec/` 目录的项目永不跑 `openspec update`（会重新生成 29 处停等的 skill；CLI 已卸，
+装回也不跑）。历史法则备查：config.yaml 的 guidance / rules 含未加引号的「冒号 + 空格」会被 YAML 解析成映射并被整体忽略。
 
 ## 5. 版本对照速查
 
 **接口与兼容承诺**（机器级 skill 与项目文件之间的契约；minor 版本内只增不改不删，要改或删 =
 major + 迁移段。在途 change 跨版本安全的前提就是这张表：状态在文件里，新 skill 接旧契约）
 
-| 接口 | 内容（v6.0） |
+| 接口 | 内容（v7.0） |
 |---|---|
 | CLAUDE.md 段名 | North Star / Stack & Conventions（含项目参数行）/ Toolkit（含 `版本:` 行）/ Session Start / Hard Rules / Enforcement |
 | backlog.md 段名 | Now（三字段：主线位置 / 下一步 / 悬而未决）/ 主线 / 支线 / Done |
-| Loop Contract | Outcome / Verify / Budget / Exit 四字段 + 可选 `Decided:` |
-| 路由与收尾 | Route / 主线 两行；Close 的 `Gate:` 行 |
-| 回顾产物 | `retros/<date>-milestone.md`（≤40 行）/ `retros/<date>-project-review.md` |
-| hooks | `hooks/` 清单、脚本名、matcher（v6.0 只改 warn-route-before-opsx 文案；v6.1 退役两个 superpowers 守卫——清单只减、旧注册留着无害，按 minor 处理，这是「删 = major」的例外） |
-| openspec/config.yaml | schema / context / rules.<artifact> / operations.apply\|archive.guidance（每项为引号字符串） |
+| Loop Contract | Outcome / Verify / Budget / Exit 四字段 + 可选 `Decided:`；位置 = change.md 头部（小项目根 SPEC.md） |
+| change 文件 | `<changes dir>/<id>/change.md`（`templates/change.md`）；接口段名只有 `## Loop Contract` / `## Tasks` / `## Close` + `Decided:` 行，其余段可增删；归档 `<changes dir>/archive/<date>-<id>/` |
+| 能力主 spec | `<specs dir>/<cap>/spec.md`：Requirement + `#### Scenario:` WHEN/THEN + `## Architectural Decisions`（Source / Superseded / Fails when）；在 change 内就地改，差异 = git diff |
+| 路由与收尾 | Route / 主线 两行 + `BASE:` 行（写在 change 文件头部）；`Gate:` 两处——契约头写计划、Close 写结果 |
+| 回顾产物 | `<retros dir>/<date>-milestone.md`（≤40 行）/ `<date>-project-review.md` |
+| hooks | `hooks/` 清单、脚本名、matcher（v6.1 退役两个 superpowers 守卫、v7.0 退役 warn-route-before-opsx——清单只减、旧注册留着无害） |
 | 版本戳 | `VERSION` = tag；项目 Toolkit 行 `版本:`；机器 `~/.claude/my-work-skill.toolkit-version` |
 
 **v5.5 → v6.0**（船长模型，FIELD-LOG 2026-10-15；证据 `docs/evidence/2026-10-14-workflow-review/`）
@@ -120,6 +124,18 @@ major + 迁移段。在途 change 跨版本安全的前提就是这张表：状�
 | 等待外部事件 = 停 | 等待期做只读 / 隔离写的活，进下次汇总 |
 | skill 正文带「回报一次后删除」的槽位 | skill 正文不放观察位；GREEN 观察只记 FIELD-LOG 并带到期日 |
 | openspec-config 的 guidance 复述一 task 一迭代 / Errata，且长句被 OpenSpec 忽略 | 只复述契约条目，每项双引号字符串 |
+
+**v6.1 → v7.0**（2026-10-15，用户裁定：主 spec 是契约记忆要守，OpenSpec 四件套不是当前时代的最优解）
+
+| v6.1 | v7.0 |
+|---|---|
+| R1 单文件 + R2 OpenSpec 四件套（proposal / design / specs delta / tasks）+ `.openspec.yaml` / lite schema | R1 与 R2 同形：一个 change 一个 `change.md`（路由两行 + BASE 行 / Loop Contract / Why / Non-goals / Spec 改动 / Decisions 可选 / Scenarios / 流程可选 / Tasks / 注记 / Close） |
+| 契约改动写 delta，归档时 `openspec archive -y` 合入主 spec，Source 事后手补 | 主 spec 在 change 内就地改；决策写进 Architectural Decisions 带 Fails when 与 Source，只写一次；差异 = `git diff $BASE -- <清单文件>`（BASE = 加入 change.md 的 commit 的父） |
+| critic 读四件套；gate 读「段」 | critic 与 gate 读同一条 spec diff（删 scenario 的 `-` 行有人看） |
+| `openspec validate` / `list` / `status` / 生成 skill 的分步引导与停等 | 退役；Close 五步一个 commit，可选 lint `grep -L '#### Scenario'`；在途 change 由 `ls <changes dir>/*/change.md` 列出 |
+| hooks 4（含 warn-route-before-opsx） | 3：heavy-test / destructive-git / backlog-size |
+| 机器装 OpenSpec CLI，bootstrap 中型项目 `openspec init` | 无外部前置；中型项目建 `docs/specs/`、`docs/changes/`、`docs/retros/`，主 spec 四段骨架 |
+| 并行未设计 | 并行前提写明：就地改主 spec 要求每 change 一个 worktree（进拍定 8） |
 
 **v6.0 → v6.1**（2026-10-15，用户裁定）：superpowers 插件退役，立项 brainstorm 改为对话（只问属于人的题，打包一次问完）；
 hooks 6 → 4（退役 block-replaced-skills、block-superpowers-specs-dir）；change-loop 与 value-review 加「任何时候觉得主线错了，
@@ -175,7 +191,8 @@ config.yaml 无 operations 段 → v5.2；hook 无 OutputEncoding 行 → v5.3�
   按字节切块读、建「源行号区间 → 目标文件」映射并断言每一源行恰好归属一次、先算完再写；Bash 里跑 Python
   设 `PYTHONUTF8=1`。项目 CLAUDE.md 对照模板补齐并删除冲突旧规则（subagent「用户确认后再开」、archive
   计数触发、四行路由声明、toolchain-refresh 引用）。
-- **v5.1 → v5.2（OpenSpec 项目）**：全局 CLI 先升到最新；`openspec update` 会整体覆盖生成文件，先
+- **v5.1 → v5.2（OpenSpec 项目；v7.0 起作废：CLI / update / config.yaml 三件不再做，生成物在 v6.1 → v7.0 ① 整体
+  `git rm`，本段只剩「hooks 重部署」一句仍有效）**：原文——全局 CLI 先升到最新；`openspec update` 会整体覆盖生成文件，先
   `git log --oneline -- .claude/commands/opsx .claude/skills/openspec-*` 确认没有本地定制再 update（不交互）；
   `openspec/config.yaml` 对照模板补 context / rules / operations 段（`schema:` 行不动）；`.claude/scripts/`
   对照 `hooks/` 重部署全部 hook 并重跑 echo 用例。
@@ -187,7 +204,7 @@ config.yaml 无 operations 段 → v5.2；hook 无 OutputEncoding 行 → v5.3�
 ## 6. 什么写在哪（内容归属）
 
 backlog 膨胀的根因是这些内容没有指定的家；记录膨胀的根因是写入有规则、读回靠记忆。写之前查表；
-**热存储**（每 session 或每路由都读：CLAUDE.md、backlog、在途 change 契约、项目参数、watchlist、decisions）
+**热存储**（每 session 或每路由都读：CLAUDE.md、backlog、在途 change 文件与其改过的主 spec 段、项目参数、watchlist、decisions）
 有上限：backlog ≤8KB（hook）；watchlist / decisions 靠只收四类 + 到期收缩；留给未来的条件优先写到它会
 被读到的地方。**冷存储**（归档、git、docs/notes、retros、冻结能力的 spec 与测试）随便长。
 
@@ -198,11 +215,12 @@ backlog 膨胀的根因是这些内容没有指定的家；记录膨胀的根因
 | 主线路径、下一步、触发在望的支线 | backlog.md |
 | session 交接（位置 / 下一步 / 悬而未决） | backlog.md Now 段，整段覆盖、债务结转 |
 | 留给未来的条件（watch） | 优先：要动的文件头 / Verify 断言 / spec Requirement 下一行；放不下 → `docs/watchlist.md`（同支线行格式，带触发，到期规则同支线） |
-| 单个 change 的过程、读数、gate 结果、失败注记、AI 决定（`Decided:`）、事后订正 | change 归档（openspec archive 的 proposal.md，R1 为 spec-lite.md / `docs/changes/<id>.md`）末尾 |
+| 能力契约（Requirement + WHEN/THEN Scenario） | `<specs dir>/<cap>/spec.md`，在 change 内就地改；change.md「Spec 改动」只列清单，差异 = git diff |
+| 单个 change 的过程、读数、gate 结果、失败注记、AI 决定（`Decided:`）、事后订正 | 归档的 change.md 末尾（小项目 `docs/changes/<id>.md`） |
 | 已定规格、未开工的步 | 前置探针的归档，或 `docs/notes/`；backlog 主线行只留一句 + 路径 |
-| 架构决策 + 为什么 + 失效前提 | capability 级：主 spec `## Architectural Decisions`（注明来源 change；被推翻的改写为 Superseded）；项目级：ARCHITECTURE.md / DESIGN.md Decisions |
+| 架构决策 + 为什么 + 失效前提 | capability 级：主 spec `## Architectural Decisions`，在 change 内写入、带 Fails when 与 `*Source: change <id> (<date>)*` 只写一次；被推翻的改写为 Superseded；项目级：ARCHITECTURE.md / DESIGN.md Decisions |
 | 人的裁定（只限方向 / 钱 / 时间 / 找谁 / 对外不可逆） | `docs/decisions.md`，一行一条人话：日期｜裁定｜理由｜失效前提；技术决定不进这里 |
 | 冻结 / 退役能力的 spec、守它的测试、探针 | 移出日常读取与 Verify 路径（冷目录 / 默认不跑的 marker），搬不删；ARCHITECTURE 留一行指针 |
 | 不属于任何 change 的探针读数、方法教训、外部事实核实、反方全文 | `docs/notes/<date>-<slug>.md`，一题一文件 |
-| 里程碑汇总 / 工程复盘 | `openspec/retros/`（OpenSpec 项目）/ `docs/retros/`（其他）：`<date>-milestone.md` / `<date>-project-review.md` |
+| 里程碑汇总 / 工程复盘 | `<retros dir>`（既有项目 `openspec/retros/`，其他 `docs/retros/`）：`<date>-milestone.md` / `<date>-project-review.md` |
 | 工具包自身的流程问题 | 汇总 ⑦ `工具包:` 一行 → 工具包会话 grep 收割进 toolkit FIELD-LOG |

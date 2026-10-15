@@ -25,11 +25,11 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
 |---|---|---|---|
 | `block-unsafe-test-commands-TEMPLATE.ps1` | PreToolUse / `Bash\|PowerShell` | 1 | 阻断裸跑测试命令（无 filter、无 escape var）；填空后去掉 `-TEMPLATE` |
 | `warn-destructive-git.ps1` | PreToolUse / `Bash\|PowerShell` | 2 | `reset --hard` / `push -f` / `checkout .` / `restore .` / `clean -f` / `branch -D` 提醒 |
-| `warn-route-before-opsx.ps1` | PreToolUse / `Skill` | 2 | `opsx:propose\|new\|ff` 前提醒先做 change-loop 路由声明 |
 | `warn-backlog-size.ps1` | PostToolUse / `Write\|Edit\|Bash\|PowerShell` | 2 | backlog.md > 8KB → exit 2 提醒搬内容 |
 
 `warn-apply-phase`（v3）已在 v5 切除（FIELD-LOG 2026-08-14 ablation 台账）；`block-replaced-skills`、
-`block-superpowers-specs-dir` 随 superpowers 插件退役于 v6.1（FIELD-LOG 2026-10-15）——旧项目里的注册留着无害。
+`block-superpowers-specs-dir` 随 superpowers 插件退役于 v6.1，`warn-route-before-opsx` 随 OpenSpec 退役于 v7.0
+（matcher 无对象；路由两行写在 change 文件头部）——FIELD-LOG 2026-10-15；旧项目里的注册留着无害。
 
 ## 注册（`.claude/settings.json`，MERGE 不覆盖）
 
@@ -37,8 +37,6 @@ project-bootstrap Step 3）：工具事件下模型看得见的只有 JSON `hook
 {
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Skill", "hooks": [
-        { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-route-before-opsx.ps1\"" } ] },
       { "matcher": "Bash|PowerShell", "hooks": [
         { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/warn-destructive-git.ps1\"" },
         { "type": "command", "command": "powershell -NoProfile -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/block-unsafe-test-commands.ps1\"" } ] }
@@ -81,7 +79,7 @@ hook 的工作目录**跟着工具当前的 cwd 走**，不是项目根：会话
    老测试不能改 → runner 配置默认排除；完全不能改 → 只靠 hook。
 4. 会派 subagent 跑测试吗？会 → **必须叠加 hook**（subagent 的文本约束被实证不可靠）。
 
-本工作流 apply 阶段大量派 subagent，裸命令不安全的项目最终都需要 hook（可叠加 marker 做深度防御）。
+本工作流内环大量派 subagent，裸命令不安全的项目最终都需要 hook（可叠加 marker 做深度防御）。
 
 **填空**：`<TEST_CMD_REGEX>`（非捕获组）、`<SAFE_FILTER_REGEX>`（只对 runner 名之后的尾串匹配，
 原因见脚本头注「runner-name split」）、`<ESCAPE_VAR>`（项目特异名）。三个 token 在头注、代码、
@@ -92,7 +90,7 @@ hook 的工作目录**跟着工具当前的 cwd 走**，不是项目根：会话
 | .NET | `\bdotnet\s+test\b` | `--filter\b` | `STUTTER_ALLOW_FULL_TEST` |
 | Python（zd-tool，2026-08-09 实测 17/17） | `\bpytest\b` | `(^\|\s)-(k\|m)(\s\|=)` | `ZDTOOL_ALLOW_FULL_TEST` |
 
-测试命令纪律同时写进项目 CLAUDE.md Stack & Conventions 与 `openspec/config.yaml` context
+测试命令纪律写进项目 CLAUDE.md Stack & Conventions
 （filter flag、escape var、subagent 不许设 escape var）；dispatch-prompt.md Constraints 槽逐字重述。
 
 ## Echo 用例（没跑过的 hook 不算部署）
@@ -123,8 +121,6 @@ $p = Start-Process -FilePath cmd -ArgumentList '/c', "chcp 936 >nul & powershell
 |---|---|---|
 | warn-destructive-git | `{"tool_input":{"command":"git reset --hard HEAD~1"}}` | 一行 JSON additionalContext，exit 0 |
 | | `{"tool_input":{"command":"git status"}}` | 静默，exit 0 |
-| warn-route-before-opsx | `{"tool_input":{"skill":"opsx:propose"}}` | 一行 JSON，exit 0 |
-| | `{"tool_input":{"skill":"change-loop"}}` | 静默，exit 0 |
 | warn-backlog-size | 超 8KB 的 backlog.md（路径与内容含中文） | stderr，exit 2 |
 | | 小 backlog.md / 其他文件 | 静默，exit 0 |
 | | 载荷带 `cwd` 字段、命令提到 backlog.md、该目录下的超标（`{"cwd":"<dir>","tool_input":{"command":"cat backlog.md"}}`；脚本读的是载荷的 cwd，不是进程工作目录） | exit 2 |
